@@ -1,11 +1,124 @@
 #include <definition.h>
 
 #include <iostream> // cout, endl
+#include <locale>   // isalnum, isdigit
+#include <string.h> // strlen
+#include <stdlib.h> // strtoul
 
-bool DefinitionValidator::process() const
+
+//static
+unsigned int DefinitionValidator::is_valid_token_count(char* p_token)
 {
-	cout << "DefinitionValidator.process()" << endl;
-	return true;
+	cout << "Validating Token Count: " << p_token << endl;
+
+	unsigned int result = 0;
+
+	result = DefinitionValidator::is_valid_number(p_token);
+	if (result > 0)
+	{
+		return result;
+	}
+
+	static const unsigned int errorTooManyDef = 5;
+	static const unsigned int maxTokenCount = 16;
+	if (!DefinitionValidator::is_valid_number_size(p_token, maxTokenCount))
+	{
+		result = errorTooManyDef;
+	}
+	cout << "Token Validation Result: " << result << endl;
+	return result;
+}
+
+
+//static
+unsigned int DefinitionValidator::is_valid_relative_address(char* p_token)
+{
+	cout << "Validating Relative Address: " << p_token << endl;
+
+	unsigned int result = 0;
+	static const unsigned int errorNumExpected = 1;
+
+	locale loc;
+	unsigned int token_length = strlen(p_token);
+	//TODO: add a check if relative address too big / long?
+	for(unsigned int i = 0; i < token_length; ++i)
+	{
+		if (!isdigit(p_token[i],loc))
+		{
+			cout << "ERROR: Invalid digit: " << p_token[i] << endl;
+			result = errorNumExpected;
+			cout << "Address Validation Result: " << result << endl;
+			return result;
+		}
+	}
+	cout << "Address Validation Result: " << result << endl;
+	return result;
+}
+
+//static
+unsigned int DefinitionValidator::is_valid_symbol(char* p_token)
+{
+	cout << "Validating Symbol: " << p_token << endl;
+
+	unsigned int result = 0;
+	static const unsigned int errorSymExpected = 2;
+	static const unsigned int errorSymTooLong  = 4;
+
+	static const unsigned int max_token_length = 16;
+	unsigned int token_length = strlen(p_token);
+	if (token_length > max_token_length)
+	{
+		cout << "ERROR: Invalid Symbol. Symbol length is greater than " << max_token_length << " characters." << endl;
+		result = errorSymTooLong;
+		return result;
+	}
+
+	for(unsigned int i = 0; i < token_length; ++i)
+	{
+		if (i == 0)
+		{
+			if (!isalpha(p_token[i]))
+			{
+				cout << "ERROR: Invalid Symbol. First char is not alphabetic." << endl;
+				result = errorSymExpected;
+				return result;
+			}
+			continue;
+		}
+		if (!isalnum(p_token[i]))
+		{
+			cout << "ERROR: Invalid Symbol. Symbol is not alphanumeric." << endl;
+			result = errorSymExpected;
+			return result;
+		}
+	}
+	cout << "Symbol Validation Result: " << result << endl;
+	return result;
+}
+
+bool DefinitionValidator::process(char* p_token) const
+{
+	cout << "DefinitionValidator processing: " << p_token << endl;
+	if (p_token != 0)
+	{
+		if (DefinitionValidator::is_valid_relative_address(p_token))
+		{
+			cout << "Call Address handler()" << endl;
+			return true;
+		}
+		else if (DefinitionValidator::is_valid_symbol(p_token))
+		{
+			cout << "Call Symbol handler()" << endl;
+			return true;
+		}
+	}
+	return false;
+}
+
+DefinitionValidator::ValidatorType::validator_enum DefinitionValidator::get_validator_enum() const
+{
+	cout << "DefinitionValidator ENUM: " << validatorType.DEFINITION << endl;
+	return validatorType.DEFINITION;
 }
 
 void DefinitionValidator::set_offset(unsigned int offset)

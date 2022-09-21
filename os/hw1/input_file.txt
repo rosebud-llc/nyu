@@ -1,0 +1,12 @@
+Hello World!
+My name is Andrew Hearst.
+Instruction code #1: I1234
+Instruction code #2: 	A5678
+
+Instruction code #3: _0_1
+End of file.
+
+
+(def_count_int) (def_symbol_str [a-Z][a-Z0-9]* max 16 char) (def_offset_int 0-based)
+(use_count_int) (use_symbol_lst[def_symbol_str] defined anywhere in file)
+(code_count_int) (code_type_char [R,E,I,A]) (code_instr_int first digit <10 and unchanged, the remainder changeable) 

@@ -10,7 +10,8 @@ public:
 	virtual ~ValidatorFactory(){};
 	virtual BaseValidator* FactoryMethod() const = 0;
 
-	bool process() const;
+	bool process(char* p_token) const;
+	BaseValidator::ValidatorType::validator_enum get_validator_enum() const;
 };
 
 class CreateDefinitionValidator: public ValidatorFactory
@@ -30,5 +31,6 @@ class CreateProgramValidator: public ValidatorFactory
 public:
 	BaseValidator* FactoryMethod() const;
 };
+
 
 #endif
