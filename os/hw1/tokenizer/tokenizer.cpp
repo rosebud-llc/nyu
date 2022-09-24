@@ -4,29 +4,24 @@
 #include <string.h> // strtok
 #include <stdlib.h> // strtol, EXIT_FAILURE
 #include <iostream> // cout, endl
+#include <sstream> //
 #include <fstream>  // getline, is_open, close
 #include <map>
 
-
-#include <validator_data/validator_data.h>
+#include <module_data/module_data.h> // Class ModuleData
+#include <validator_data/validator_data.h> // key_strcmp
 #include <validator_handlers/validator_handler.h>
 #include <validator_queue/validator_queue.h> // initialize_validator_queue, delete_validator_queue, reorder_validator_queue
 using namespace std;
 
-// MAP should be used for symbol table because there may be more than one definition for a symbol and you should default to using the first one provided
-// NOTE according to lab1_assign.Z test outputs the Symbol Table appears to be Key Ordered
-
 // You MUST keep ordered list of USE list symbols on second pass so that you know how which symbol to apply for an E instruction
 // you can have up to 256 symbols  so it's not always the last digit you need to check, but the last 3 of the instruction
-
-map<char*, unsigned int> symbol_table;
-
 
 void exit_on_parse_error(unsigned int errorCode,
 		unsigned int lineNum, unsigned int lineOffset)
 {
 	static const char* errorString[] = {
-			"SUCCESS"                  // (0) No error
+			"SUCCESS",                  // (0) No error
 			"NUM_EXPECTED",            // (1) Number expected, anything >= 2^30 is not a number either
 			"SYM_EXPECTED",            // (2) Symbol expected
 			"ADDR_EXPECTED",           // (3) Addressing expected which is A/E/I/R
@@ -35,10 +30,47 @@ void exit_on_parse_error(unsigned int errorCode,
 			"TOO_MANY_USE_IN_MODULE",  // (6) > 16
 			"TOO_MANY_INSTR",          // (7) total num_instr exceeds memory size (512)
 	};
+	//TODO: need to define what constitutes a syntax error vs. poarsing error because only synatx error should cause program to stop altogether
+	//TODO: actually looking at out-10-19 examples it looks like all of these are syntax errors that EXIT on failure
 	if (errorCode > 0)
-	{
+	{   /*
+		for(unsigned int i = 0; i<sizeof(errorString); ++i)
+		{
+			cout << "errorCode: " << errorCode << " | errorString: " << errorString[i] << endl;
+		}*/
 		cout << "Parse Error line " << lineNum << " offset " << lineOffset << ": " << errorString[errorCode] << endl;
+		//TODO we just need to return b/c this will screw up final print
 		exit(EXIT_FAILURE);
+	}
+}
+
+void set_string_start_from_matching_token(string& line, char* p_token, unsigned int& tokenOffset)
+{
+	if (p_token != 0)
+	{
+		stringstream ss;
+		bool stopCountingTabs = false;
+		string::iterator s_itr = line.begin();
+		for (; s_itr != line.end(); ++s_itr)
+		{
+			// Increment tokenOffset by number of tabs processed
+			if (*s_itr == '\t' && !stopCountingTabs)
+			{
+				tokenOffset++;
+			}
+			// Stop counting tabs once matching token found
+			else if (*s_itr == *p_token && !stopCountingTabs)
+			{
+				stopCountingTabs = true;
+			}
+			// When done counting tabs, concatenate substring starting from token
+			else if (stopCountingTabs)
+			{
+				ss << *s_itr;
+			}
+		}
+		// Reset string to substring starting from token
+		line = ss.str();
 	}
 }
 
@@ -49,125 +81,99 @@ char* convert_string_to_cstring(string& line)
 	return p_cstring;
 }
 
-//TODO move set_count into validator_handler ?
-void set_count(char* p_token,
-		ValidatorData* validator)
+char* nextToken(char* p_token, unsigned int& tokenOffset)
 {
-	cout << "P_TOKEN - GIVEN COUNT: " << p_token << endl;
-	long int count = strtol(p_token,NULL,10);
-
-	//TODO: if def_validator or prog_validator, count needs to be multiplied by 2 since you're dealing with paired (S,R) and (type, instr) entries to process
-	if (validator->validatorType == 0 || validator->validatorType == 2)
-	{
-		//Set base address current and next before doubling
-		//TODO: if validator handles nextToken this should be moved further upstream
-		if (validator->validatorType == 2)
-		{
-			validator->currBaseAddress = validator->nextBaseAddress;
-			validator->nextBaseAddress = (unsigned int)count;
-			cout << "BASE ADDRESS.CURR = " << validator->currBaseAddress << endl;
-			cout << "BASE ADDRESS.NEXT = " << validator->nextBaseAddress << endl;
-		}
-		count = count * 2;
-		cout << "P_TOKEN - COUNT DOUBLED" << endl;
-	}
-	(count >= 0) ? validator->tokenCount = (unsigned int)count : 0; // TODO: Set count to 0 if count < 0 ? And Skip?
-	cout << "P_TOKEN - SET COUNT: " << validator->tokenCount << endl;
+	static const char* delims = " \t\n";
+	tokenOffset++;
+	return strtok(p_token,delims);
 }
 
-
-void count_handler(char* p_token,
-		ValidatorData* validator,
-		queue<ValidatorData*>& validators)
-{
-	set_count(p_token, validator);
-	//If count STILL zero even after parsing token count, then move to next validator
-	//TODO: move this into tokenize so that you can move count_handler into valdaitor_handler folder without needing to include queue logic
-	if (validator->tokenCount == 0)
-	{
-		reorder_validator_queue(validators);
-		cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
-	}
-}
-
-char* nextToken(char* p_token, const char* delimiters, unsigned int& tokenOffset)
-{
-	++tokenOffset;
-	return strtok(p_token,delimiters);
-}
-
-
-// TODO pass lineNumber and offsetNumber from processFileStreeam to tokenize()
-// increment as needed
 void tokenize(string& line,
-		const char* delims,
 		unsigned int lineNumber,
 		unsigned int tokenOffset,
 		queue<ValidatorData*>& validators,
-		vector<char*>& useSymbolsList)
+		SymbolTable& symbolTable,
+		ModuleData& moduleData)
 {
-	char* p_cstring = convert_string_to_cstring(line);
 	// Next Token
-	char* p_token = nextToken(p_cstring,delims,tokenOffset);
+	// DO NOT UPDATE PREV TOKEN HERE like you do in the other nextToken calls
+	string orig_line = line;
+	char* p_cstring = convert_string_to_cstring(line);
+	char* p_token = nextToken(p_cstring,tokenOffset);
+
+	ValidatorData* validator = validators.front();
 	while (p_token != 0)
 	{
-		ValidatorData* validator = validators.front();
 		// Start of linker file || ready for next validator || new line has zero items to read
 		if (validator->tokenCount == 0)
 		{
 			// First, validate count
-			unsigned int is_valid_count = validator_handler(p_token, validator, true);
-			cout << "Is Valid Count: " << is_valid_count << endl;
+			//cout << "Validate Count: " << p_token << " because validator->tokenCount == " << validator->tokenCount << endl;
+			unsigned int is_valid_count = validator_handler(p_token, validator, symbolTable, moduleData, true);
+			//cout << "BASE ADDRESS.CURR = " << validator->currBaseAddress << endl;
+			//cout << "BASE ADDRESS.NEXT = " << validator->nextBaseAddress << endl;
+			//cout << "Is Valid Count: " << is_valid_count << endl;
 			if (is_valid_count > 0)
 			{
 				exit_on_parse_error(is_valid_count,lineNumber,tokenOffset);
 			}
-			//TODO: need to handle count validation here with count_handler, but similar to validator_handler using if/else if/else to
-			// know which is_valid_token_count implementation to use
-			// Set Count TODO: this count is for number of args (or pairs of args) to process for the line - name it better than count handler
 			// Then set count
-			count_handler(p_token, validator, validators);
+			set_validator_count(p_token,validator,symbolTable,moduleData);
+			//If count STILL zero even after parsing token count, then move to next validator
+			if (validator->tokenCount == 0)
+			{
+				reorder_validator_queue(validators);
+				validator = validators.front();
+				cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
+			}
 			// Next Token
-			p_token = nextToken(NULL,delims,tokenOffset);
+			//if(p_token != NULL) strcpy(prevToken,p_token);
+			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
+			p_token = nextToken(NULL, tokenOffset);
+			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
+			if(p_token != NULL) strcpy(validator->currToken,p_token); // update currToken
+			//cout << "TOKEN: " << validator->currToken << endl;
+			if(p_token == NULL) cout << "Token is null!" << endl;
 		}
-		/*
-		 * TODO:
-		 * - IGNORE this one line, do everything else more or less: -----do not double the count in set_count() and count_handler() functions
-		 * - instead, rely on validator.first->get_validator_enum() to check which vaidator to run (def/use/prog)
-		 * - given validator, you'll call strtok only once (for use symbol) or twice (to build a def or prog pair)
-		 * - then pass the resultant data as Templated Struct so you can send any kind of struct to factory process()
-		 * - if (def) -> process pairs (Symbol, Relative Address) -> return (Symbol, Absolute Address) -> add to symbol_table map -> error if it already exists?
-		 * - if (use) -> process use list (Symbol, 0-based Order in List) -> return (Symbol, 0-based Order in List) i.e. do nothing, append output to saved vector
-		 * - if (prog) -> process instructions using base address for R and useList for E (Type, Instruction, SymbolTable) -> return modified Instruction
-		 * - you could try to proactively clean up here or rely on provided counts to be correct
-		 *
-		 */
-		while(p_token != 0) //validator.second > 0 && ?
+		// Only enter this while loop when you actually have something to process (i.e. count is > 0)
+		while(validator->tokenCount > 0) // NOTE YOU REMOVED P_TOKEN NULL CHECK FROM HERE ON 09/23 DUE TO input-13 TEST FAIL
 		{
-			unsigned int is_valid_syntax = validator_handler(p_token, validator);
-			cout << "Is Valid Syntax: " << is_valid_syntax << endl;
+			unsigned int is_valid_syntax = validator_handler(p_token, validator, symbolTable, moduleData);
+			//cout << "Is Valid Syntax: " << is_valid_syntax << endl;
 			if (is_valid_syntax > 0)
 			{
 				exit_on_parse_error(is_valid_syntax,lineNumber,tokenOffset);
 			}
 
 			// Next Token
-			p_token = nextToken(NULL,delims,tokenOffset);
+			//if(p_token != NULL) strcpy(prevToken,p_token);
+			//cout << "before strcpy" << endl;
+			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
+			p_token = nextToken(NULL, tokenOffset);
+			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
+			if(p_token != NULL) strcpy(validator->currToken,p_token); // update currToken
+			//cout << "after strcpy" << endl;
+			//cout << "TOKEN: " << validator->currToken << endl;
+
 			// Case where Definition Count set to 0 because there's nothing to process, you don't want to decrement  to negative value.. altho not posisble if this is unsigned int, but better to check and be sure
 			if (validator->tokenCount > 0)
 			{
+				cout << "Decrement ValidatorType(" << validator->validatorType << ") from " << validator->tokenCount;
 				validator->tokenCount--;
+				cout << " to " << validator->tokenCount << endl;
 			}
-			cout << "VALIDATOR COUNT: " << validator->tokenCount << endl;
+			//cout << "VALIDATOR COUNT: " << validator->tokenCount << endl;
 			if (validator->tokenCount == 0)
 			{
 				reorder_validator_queue(validators);
+				validator = validators.front();
 				cout << "QUEUE REORDERED - FINISHED PROCESSING" << endl;
 				break;
 			}
 		}
 	}
 	// Deallocate mem
+	//cout << "deallocate mem" << endl;
 	delete[] p_cstring;
 	return;
 }
@@ -177,27 +183,44 @@ void processFileStream(ifstream& input_file_stream)
 {
 	if (input_file_stream.is_open())
 	{
-		cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Start reading from file stream." << endl;
+		//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Start reading from file stream." << endl;
 
 		string line;
+
 		unsigned int lineNumber = 0;
 		unsigned int tokenOffset = 0;
-		const char* delims = " \t\n";
-		vector<char*> useSymbolsList;
 		queue<ValidatorData*> validators = initialize_validator_queue();
-		cout << "Attempting to get first line in file... " << endl;
+		SymbolTable symbolTable;
+		ModuleData moduleData;
+		//cout << "Attempting to get first line in file... " << endl;
 		while(getline(input_file_stream, line))
 		{
-			cout << "LINE#" << ++lineNumber << ": " << line << endl;
+			lineNumber++;
+			tokenOffset = 0;
+			cout << "LINE#" << lineNumber << ": " << line << endl;
 			if (!validators.empty())
 			{
-				tokenize(line,delims,lineNumber,tokenOffset,validators,useSymbolsList);
+				tokenize(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);
 			}
 		}
 
+		// TODO: On SECOND PASS, Print Symbol Table
+		symbolTable.print_symbol_table();
+
+		// Deallocate mem
 		delete_validator_queue(validators);
+		// TODO: symbolTable must be updated during definition validation. key_strcmp must be defined outside class (can't refernce class members when function is static)
+		symbolTable.delete_symbol_table_keys();
+		// Close file stream
 		input_file_stream.close();
-		cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Finished reading from file stream." << endl;
+		//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Finished reading from file stream." << endl;
+		/*
+		symbolTable.add_symbol_info("Hello World!",12345,true,false);
+		symbolTable.print_symbols();
+		symbolTable.add_symbol_info("You Rock!",6789,false,true);
+		symbolTable.print_symbols();
+		symbolTable.delete_symbols();
+		*/
 	}
 	else
 	{

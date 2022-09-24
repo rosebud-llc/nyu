@@ -9,7 +9,7 @@
 //static
 unsigned int DefinitionValidator::is_valid_token_count(char* p_token)
 {
-	cout << "Validating Token Count: " << p_token << endl;
+	//cout << "Validating Token Count: " << p_token << endl;
 
 	unsigned int result = 0;
 
@@ -25,15 +25,16 @@ unsigned int DefinitionValidator::is_valid_token_count(char* p_token)
 	{
 		result = errorTooManyDef;
 	}
-	cout << "Token Validation Result: " << result << endl;
+	//cout << "Token Validation Result: " << result << endl;
 	return result;
 }
 
 
 //static
-unsigned int DefinitionValidator::is_valid_relative_address(char* p_token)
+unsigned int DefinitionValidator::is_valid_relative_address(char* p_token,
+		ValidatorData* validator)
 {
-	cout << "Validating Relative Address: " << p_token << endl;
+	//cout << "Validating Relative Address: " << p_token << endl;
 
 	unsigned int result = 0;
 	static const unsigned int errorNumExpected = 1;
@@ -47,58 +48,18 @@ unsigned int DefinitionValidator::is_valid_relative_address(char* p_token)
 		{
 			cout << "ERROR: Invalid digit: " << p_token[i] << endl;
 			result = errorNumExpected;
-			cout << "Address Validation Result: " << result << endl;
+			//cout << "Address Validation Result: " << result << endl;
 			return result;
 		}
 	}
-	cout << "Address Validation Result: " << result << endl;
-	return result;
-}
-
-//static
-unsigned int DefinitionValidator::is_valid_symbol(char* p_token)
-{
-	cout << "Validating Symbol: " << p_token << endl;
-
-	unsigned int result = 0;
-	static const unsigned int errorSymExpected = 2;
-	static const unsigned int errorSymTooLong  = 4;
-
-	static const unsigned int max_token_length = 16;
-	unsigned int token_length = strlen(p_token);
-	if (token_length > max_token_length)
-	{
-		cout << "ERROR: Invalid Symbol. Symbol length is greater than " << max_token_length << " characters." << endl;
-		result = errorSymTooLong;
-		return result;
-	}
-
-	for(unsigned int i = 0; i < token_length; ++i)
-	{
-		if (i == 0)
-		{
-			if (!isalpha(p_token[i]))
-			{
-				cout << "ERROR: Invalid Symbol. First char is not alphabetic." << endl;
-				result = errorSymExpected;
-				return result;
-			}
-			continue;
-		}
-		if (!isalnum(p_token[i]))
-		{
-			cout << "ERROR: Invalid Symbol. Symbol is not alphanumeric." << endl;
-			result = errorSymExpected;
-			return result;
-		}
-	}
-	cout << "Symbol Validation Result: " << result << endl;
+	//cout << "Address Validation Result: " << result << endl;
 	return result;
 }
 
 bool DefinitionValidator::process(char* p_token) const
 {
 	cout << "DefinitionValidator processing: " << p_token << endl;
+	/*
 	if (p_token != 0)
 	{
 		if (DefinitionValidator::is_valid_relative_address(p_token))
@@ -112,6 +73,7 @@ bool DefinitionValidator::process(char* p_token) const
 			return true;
 		}
 	}
+	*/
 	return false;
 }
 

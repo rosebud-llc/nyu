@@ -3,6 +3,8 @@
 
 using namespace std;
 
-unsigned int use_handler(char* p_token, unsigned int count, bool onlyEvaluateCount=false);
+unsigned int use_handler(char* p_token,
+		unsigned int count,
+		bool onlyEvaluateCount=false);
 
 #endif

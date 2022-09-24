@@ -5,10 +5,14 @@
 #include <string>
 using namespace std;
 
+
 //TODO: change strings to char* to enforce char* _symbol[15]
 class SymbolValidator: public BaseValidator
 {
 public:
+
+	static unsigned int is_valid_symbol(char* p_token);
+
 	void set_symbol(string& symbol);
 	string get_symbol();
 

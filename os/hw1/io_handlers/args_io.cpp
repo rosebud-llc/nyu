@@ -21,7 +21,7 @@ vector<pair<const char*,const char*> > parseArgs(int argc, char* argv[])
 			{
 				continue;
 			}
-			cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Arg: " << argv[i] << endl;
+			//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Arg: " << argv[i] << endl;
 			if(i % 2 == 1)
 			{
 				first_arg = argv[i];
@@ -29,12 +29,12 @@ vector<pair<const char*,const char*> > parseArgs(int argc, char* argv[])
 			else
 			{
 				second_arg = argv[i];
-				cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Adding arg pair: (" << first_arg << ", " << second_arg << ") "<< endl;
+				//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Adding arg pair: (" << first_arg << ", " << second_arg << ") "<< endl;
 				args.push_back(make_pair(first_arg, second_arg));
 			}
 		}
 	}
-	cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Total number of extra args: " << args.size() << endl;
+	//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Total number of extra args: " << args.size() << endl;
 	return args;
 }
 
