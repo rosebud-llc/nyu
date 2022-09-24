@@ -124,7 +124,7 @@ void tokenize(string& line,
 			{
 				reorder_validator_queue(validators);
 				validator = validators.front();
-				cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
+				//cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
 			}
 			// Next Token
 			//if(p_token != NULL) strcpy(prevToken,p_token);
@@ -133,7 +133,7 @@ void tokenize(string& line,
 			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
 			if(p_token != NULL) strcpy(validator->currToken,p_token); // update currToken
 			//cout << "TOKEN: " << validator->currToken << endl;
-			if(p_token == NULL) cout << "Token is null!" << endl;
+			//if(p_token == NULL) cout << "Token is null!" << endl;
 		}
 		// Only enter this while loop when you actually have something to process (i.e. count is > 0)
 		while(validator->tokenCount > 0) // NOTE YOU REMOVED P_TOKEN NULL CHECK FROM HERE ON 09/23 DUE TO input-13 TEST FAIL
@@ -157,17 +157,17 @@ void tokenize(string& line,
 
 			// Case where Definition Count set to 0 because there's nothing to process, you don't want to decrement  to negative value.. altho not posisble if this is unsigned int, but better to check and be sure
 			if (validator->tokenCount > 0)
-			{
-				cout << "Decrement ValidatorType(" << validator->validatorType << ") from " << validator->tokenCount;
+			{     
+				//cout << "Decrement ValidatorType(" << validator->validatorType << ") from " << validator->tokenCount;
 				validator->tokenCount--;
-				cout << " to " << validator->tokenCount << endl;
+				//cout << " to " << validator->tokenCount << endl;
 			}
 			//cout << "VALIDATOR COUNT: " << validator->tokenCount << endl;
 			if (validator->tokenCount == 0)
 			{
 				reorder_validator_queue(validators);
 				validator = validators.front();
-				cout << "QUEUE REORDERED - FINISHED PROCESSING" << endl;
+				//cout << "QUEUE REORDERED - FINISHED PROCESSING" << endl;
 				break;
 			}
 		}
@@ -197,7 +197,7 @@ void processFileStream(ifstream& input_file_stream)
 		{
 			lineNumber++;
 			tokenOffset = 0;
-			cout << "LINE#" << lineNumber << ": " << line << endl;
+			//cout << "LINE#" << lineNumber << ": " << line << endl;
 			if (!validators.empty())
 			{
 				tokenize(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);

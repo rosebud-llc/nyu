@@ -3,7 +3,7 @@
 #include <iostream> // cout, endl
 #include <string.h> // strlen
 #include <locale>   // isdigit
-#include <stdlib.h> // strtoul
+#include <stdlib.h> // strtol
 
 //static
 unsigned int BaseValidator::is_valid_number(char* p_token)
@@ -34,7 +34,8 @@ bool BaseValidator::is_valid_number_size(char* p_token,
 {
 	//cout << "Validating Token Number Size: " << p_token << endl;
 
-	unsigned long tokenCount = strtoul(p_token,NULL,0);
+	long int l_tokenCount = strtol(p_token,NULL,10);
+	unsigned int tokenCount = (unsigned int)l_tokenCount;
 	//cout << "Converted p_token from " << p_token << " to " << tokenCount << endl;
 	return tokenCount < maxTokenCount;
 }

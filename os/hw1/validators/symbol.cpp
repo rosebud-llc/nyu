@@ -20,7 +20,7 @@ unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 		return errorSymExpected;
 	}
 
-	cout << "Validating Symbol: " << p_token << endl;
+	//cout << "Validating Symbol: " << p_token << endl;
 
 	static const unsigned int max_token_length = 16;
 	unsigned int token_length = strlen(p_token);
@@ -51,7 +51,7 @@ unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 		}
 	}
 
-	cout << "Symbol Validation Result: " << result << endl;
+	//cout << "Symbol Validation Result: " << result << endl;
 	return result;
 }
 

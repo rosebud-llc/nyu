@@ -63,7 +63,7 @@ void set_validator_count(char* p_token,
 		SymbolTable& symbolTable,
 		ModuleData& moduleData)
 {
-	cout << "Given ValitdatorType(" << validator->validatorType << ") Count: " << p_token << endl;
+	//cout << "Given ValitdatorType(" << validator->validatorType << ") Count: " << p_token << endl;
 	long int l_count = strtol(p_token,NULL,10);
 	unsigned int count = (unsigned int)l_count;
 
@@ -93,5 +93,5 @@ void set_validator_count(char* p_token,
 		count = count * 2;
 	}
 	validator->tokenCount = (count >= 0) ? count : 0; // TODO: Set count to 0 if count < 0 ? And Skip?
-	cout << "Set ValidatorType(" << validator->validatorType << ") Count: " << validator->tokenCount << endl;
+	//cout << "Set ValidatorType(" << validator->validatorType << ") Count: " << validator->tokenCount << endl;
 }

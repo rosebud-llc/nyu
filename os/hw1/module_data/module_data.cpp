@@ -1,6 +1,7 @@
 #include <module_data.h>
 
 #include <string.h> // strcpy
+#include <stdlib.h> // strtol
 
 void ModuleData::increment_module_number()
 {
@@ -34,6 +35,13 @@ void ModuleData::clear_symbols_from_def_list()
 	_defList.erase(_defList.begin(), _defList.end());
 }
 
+void ModuleData::set_cumulative_program_instructions(char* p_token)
+{
+	long int l_count = strtol(p_token,NULL,10);
+	unsigned int count = (unsigned int)l_count;
+	_cumulativeProgramInstructions += count;
+}
+
 unsigned int ModuleData::get_module_number()
 {
 	return _moduleNumber;
@@ -52,4 +60,9 @@ unsigned int ModuleData::get_next_base_address()
 vector<char*> ModuleData::get_def_list()
 {
 	return _defList;
+}
+
+unsigned int ModuleData::get_cumulative_program_instructions()
+{
+	return _cumulativeProgramInstructions;
 }
