@@ -8,7 +8,7 @@
 //static
 unsigned int BaseValidator::is_valid_number(char* p_token)
 {
-	//cout << "Validating Token Number: " << p_token << endl;
+	cout << "Validating Token Number: " << p_token << endl;
 
 	unsigned int result = 0;
 	static const unsigned int errorNumExpected = 1;
@@ -32,10 +32,10 @@ unsigned int BaseValidator::is_valid_number(char* p_token)
 bool BaseValidator::is_valid_number_size(char* p_token,
 		unsigned int maxTokenCount)
 {
-	//cout << "Validating Token Number Size: " << p_token << endl;
+	cout << "Validating Token Number Size: " << p_token << endl;
 
 	long int l_tokenCount = strtol(p_token,NULL,10);
 	unsigned int tokenCount = (unsigned int)l_tokenCount;
-	//cout << "Converted p_token from " << p_token << " to " << tokenCount << endl;
+	cout << "Converted p_token from " << p_token << " to " << tokenCount << endl;
 	return tokenCount < maxTokenCount;
 }

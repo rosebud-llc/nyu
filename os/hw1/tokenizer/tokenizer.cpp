@@ -108,11 +108,11 @@ void tokenize(string& line,
 		if (validator->tokenCount == 0)
 		{
 			// First, validate count
-			//cout << "Validate Count: " << p_token << " because validator->tokenCount == " << validator->tokenCount << endl;
+			cout << "Validate Count: " << p_token << " because validator->tokenCount == " << validator->tokenCount << endl;
 			unsigned int is_valid_count = validator_handler(p_token, validator, symbolTable, moduleData, true);
 			//cout << "BASE ADDRESS.CURR = " << validator->currBaseAddress << endl;
 			//cout << "BASE ADDRESS.NEXT = " << validator->nextBaseAddress << endl;
-			//cout << "Is Valid Count: " << is_valid_count << endl;
+			cout << "Is Valid Count: " << is_valid_count << endl;
 			if (is_valid_count > 0)
 			{
 				exit_on_parse_error(is_valid_count,lineNumber,tokenOffset);
@@ -131,9 +131,18 @@ void tokenize(string& line,
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
 			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
-			if(p_token != NULL) strcpy(validator->currToken,p_token); // update currToken
-			//cout << "TOKEN: " << validator->currToken << endl;
-			//if(p_token == NULL) cout << "Token is null!" << endl;
+			if(p_token != NULL)
+			{	 
+				strcpy(validator->currToken,p_token); // update currToken
+			}
+			else // token is NULL, exit from tokenizer() and getline on next iteration to process
+			{
+				cout << "EXIT tokenizer because next token is NULL" << endl;
+				delete[] p_cstring;
+				return;
+			}
+			cout << "TOKEN: " << validator->currToken << endl;
+			if(p_token == NULL) cout << "Token is null!" << endl;
 		}
 		// Only enter this while loop when you actually have something to process (i.e. count is > 0)
 		while(validator->tokenCount > 0) // NOTE YOU REMOVED P_TOKEN NULL CHECK FROM HERE ON 09/23 DUE TO input-13 TEST FAIL
@@ -151,7 +160,13 @@ void tokenize(string& line,
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
 			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
-			if(p_token != NULL) strcpy(validator->currToken,p_token); // update currToken
+			if(p_token != NULL)
+			{
+				 strcpy(validator->currToken,p_token); // update currToken
+			
+			}
+			//NOTE: the ELSE check that you do earier in the set count loop above must happen
+			// at the end of this loop after you decrement counts and reorder Queue
 			//cout << "after strcpy" << endl;
 			//cout << "TOKEN: " << validator->currToken << endl;
 
@@ -169,6 +184,13 @@ void tokenize(string& line,
 				validator = validators.front();
 				//cout << "QUEUE REORDERED - FINISHED PROCESSING" << endl;
 				break;
+			}
+			if(p_token == NULL) // this is the same check as when you return during the set count loop above.
+			// token is NULL, exist from tokenizer() and getline on next iteration to process 
+			{
+				cout << "EXIT tokenizer because next token is NULL" << endl;
+				delete[] p_cstring;
+				return;
 			}
 		}
 	}
@@ -197,13 +219,32 @@ void processFileStream(ifstream& input_file_stream)
 		{
 			lineNumber++;
 			tokenOffset = 0;
-			//cout << "LINE#" << lineNumber << ": " << line << endl;
+			cout << "LINE#" << lineNumber << ": " << line << endl;
 			if (!validators.empty())
 			{
 				tokenize(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);
+				//cout << "exited tokenizer" << endl;
 			}
 		}
-
+		cout << "Check if validators empty before inspecting front validator count" << endl;
+		if (!validators.empty())
+		{
+			
+			ValidatorData* validator = validators.front();
+			// We got here because there were still tokens to process based on token count
+			// provided at the start of each line, but tokenCount was not fully decremented to zero.
+			if (validator->tokenCount > 0)
+			{
+				cout << "Validator tokenCount is > than zero" << endl;
+				char* p_token = NULL;
+				unsigned int is_valid_syntax = validator_handler(p_token,validator,symbolTable,moduleData);
+				cout << "is_valid_syntax == " << is_valid_syntax << endl;
+				if (is_valid_syntax > 0)
+				{
+					exit_on_parse_error(is_valid_syntax,lineNumber,tokenOffset);
+				}
+			}
+		}
 		// TODO: On SECOND PASS, Print Symbol Table
 		symbolTable.print_symbol_table();
 

@@ -6,7 +6,7 @@
 //static
 unsigned int UseValidator::is_valid_token_count(char* p_token)
 {
-	//cout << "Validating Token Count: " << p_token << endl;
+	cout << "Validating Token Count: " << p_token << endl;
 
 	unsigned int result = 0;
 
@@ -22,7 +22,7 @@ unsigned int UseValidator::is_valid_token_count(char* p_token)
 	{
 		result = errorTooManyUse;
 	}
-	//cout << "Token Count Validation Result: " << result << endl;
+	cout << "Token Count Validation Result: " << result << endl;
 	return result;
 }
 

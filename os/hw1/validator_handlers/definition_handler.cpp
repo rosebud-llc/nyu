@@ -37,7 +37,7 @@ unsigned int definition_handler(char* p_token,
 					//cout << "Warning: not inserting symbol into _defList because isDuplicate == true" << endl;
 				}
 			}
-			//cout << "is_valid_symbol: " << result << endl;
+			cout << "is_valid_symbol: " << result << endl;
 		}
 		else
 		{
@@ -49,7 +49,7 @@ unsigned int definition_handler(char* p_token,
 				unsigned int relativeAddress1 = (unsigned int)relativeAddress0;
 				symbolTable.update_symbol_relative_address(validator->prevToken, relativeAddress1);
 			}
-			//cout << "is_valid_relative_address: " << result << endl;
+			cout << "is_valid_relative_address: " << result << endl;
 		}
 	}
 	return result;

@@ -14,9 +14,9 @@ static const set<char> valid_program_instruction_types(
 //static
 unsigned int ProgramValidator::is_valid_token_count(char* p_token, ModuleData& moduleData)
 {
-	//cout << "Validating Token Count: " << p_token 
-	//	<< " with cumulative program instructions count: " 
-	//	<< moduleData.get_cumulative_program_instructions() << endl;
+	cout << "Validating Token Count: " << p_token 
+		<< " with cumulative program instructions count: " 
+		<< moduleData.get_cumulative_program_instructions() << endl;
 
 	unsigned int result = 0;
 
@@ -29,15 +29,15 @@ unsigned int ProgramValidator::is_valid_token_count(char* p_token, ModuleData& m
 	static const unsigned int errorTooManyInstr = 7;
 	static const unsigned int maxCumulativeProgramInstructions = 512;
 	moduleData.set_cumulative_program_instructions(p_token);
-	//cout << "New cumulative program instructions count: " 
-	//	<< moduleData.get_cumulative_program_instructions() << endl; 
+	cout << "New cumulative program instructions count: " 
+		<< moduleData.get_cumulative_program_instructions() << endl; 
 	if ( moduleData.get_cumulative_program_instructions() >
 		maxCumulativeProgramInstructions)
 	{
 		result = errorTooManyInstr;
 	}
 
-	//cout << "Token Validation Result: " << result << endl;
+	cout << "Token Validation Result: " << result << endl;
 	return result;
 }
 
@@ -45,7 +45,7 @@ unsigned int ProgramValidator::is_valid_token_count(char* p_token, ModuleData& m
 //TODO: does it matter if type is upper or lower case?
 unsigned int ProgramValidator::is_valid_program_type(char* p_token)
 {
-	//cout << "Validating program type: " << p_token<< endl;
+	cout << "Validating program type: " << p_token<< endl;
 
 	unsigned int result = 0;
 	static const unsigned int errorAddrExpected = 3;
@@ -85,13 +85,13 @@ unsigned int ProgramValidator::is_valid_program_type(char* p_token)
 		cout << "ERROR: set of valid program instruction types is empty!" << endl;
 		result = errorAddrExpected;
 	}
-	//cout << "Program Type Valiation Result: " << result << endl;
+	cout << "Program Type Valiation Result: " << result << endl;
 	return result;
 }
 
 unsigned int ProgramValidator::is_valid_program_instruction(char* p_token)
 {
-	//cout << "Validating Program Instruction: " << p_token << endl;
+	cout << "Validating Program Instruction: " << p_token << endl;
 	//TODO: NOTE this is only a PassTwo consideration, not a PassOne validation consideration
 	// you need to validate that the instruction given can even be used w/ the program type
 	// e.g. if given E 3000, but there are only 2 instructions in use list, then 3 is outbounds
@@ -139,7 +139,7 @@ unsigned int ProgramValidator::is_valid_program_instruction(char* p_token)
 
 	}
 	*/
-	//cout << "Program Instruction Validation Result: " << result << endl;
+	cout << "Program Instruction Validation Result: " << result << endl;
 	return result;
 }
 

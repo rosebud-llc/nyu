@@ -17,8 +17,8 @@ void set_relative_address(char* symbol, SymbolTable& symbolTable, ModuleData& mo
 				symbolTable.get_symbol_address(symbol);
 		unsigned int maxRelativeAddress =
 				moduleData.get_next_base_address() - moduleData.get_curr_base_address(); // TODO 0-based counting so subtract 1?
-		//cout << "Symbol's Relative   Address(" << relativeAddress << ")" << endl;
-		//cout << "Max      Relative   Address(" << maxRelativeAddress << ")" << endl;
+		cout << "Symbol's Relative   Address(" << relativeAddress << ")" << endl;
+		cout << "Max      Relative   Address(" << maxRelativeAddress << ")" << endl;
 
 		if (relativeAddress > maxRelativeAddress)
 		{
@@ -63,7 +63,7 @@ void set_validator_count(char* p_token,
 		SymbolTable& symbolTable,
 		ModuleData& moduleData)
 {
-	//cout << "Given ValitdatorType(" << validator->validatorType << ") Count: " << p_token << endl;
+	cout << "Given ValitdatorType(" << validator->validatorType << ") Count: " << p_token << endl;
 	long int l_count = strtol(p_token,NULL,10);
 	unsigned int count = (unsigned int)l_count;
 
@@ -93,5 +93,5 @@ void set_validator_count(char* p_token,
 		count = count * 2;
 	}
 	validator->tokenCount = (count >= 0) ? count : 0; // TODO: Set count to 0 if count < 0 ? And Skip?
-	//cout << "Set ValidatorType(" << validator->validatorType << ") Count: " << validator->tokenCount << endl;
+	cout << "Set ValidatorType(" << validator->validatorType << ") Count: " << validator->tokenCount << endl;
 }

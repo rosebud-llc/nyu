@@ -19,12 +19,12 @@ unsigned int program_handler(char* p_token,
 		if (count % 2 == 0)
 		{
 			result = ProgramValidator::is_valid_program_type(p_token);
-			//cout << "is_valid_program_type: " <<  result << endl;
+			cout << "is_valid_program_type: " <<  result << endl;
 		}
 		else
 		{
 			result = ProgramValidator::is_valid_program_instruction(p_token);
-			//cout << "is_valid_program_instruction: " << result << endl;
+			cout << "is_valid_program_instruction: " << result << endl;
 		}
 	}
 	return result;
