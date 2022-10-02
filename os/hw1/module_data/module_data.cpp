@@ -21,6 +21,11 @@ void ModuleData::set_next_base_address(unsigned int baseAddress)
 	_nextBaseAddress += baseAddress;
 }
 
+void ModuleData::increment_memory_map_number()
+{
+	_memoryMapNumber++;
+}
+
 void ModuleData::insert_symbol_to_def_list(char* p_token)
 {
 	//TODO - double check that symbols added to _defList are deleted
@@ -102,6 +107,11 @@ unsigned int ModuleData::get_curr_base_address()
 unsigned int ModuleData::get_next_base_address()
 {
 	return _nextBaseAddress;
+}
+
+unsigned int ModuleData::get_memory_map_number()
+{
+	return _memoryMapNumber;
 }
 
 unsigned int ModuleData::get_cumulative_program_instructions()

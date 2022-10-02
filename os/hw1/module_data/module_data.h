@@ -14,12 +14,14 @@ public:
 		_moduleNumber(0),
 		_currBaseAddress(0),
 		_nextBaseAddress(0),
+		_memoryMapNumber(0),
 		_cumulativeProgramInstructions(0) {};
 
 	// mutators for unsigned int private member variables
 	void increment_module_number();
 	void set_curr_base_address(unsigned int);
 	void set_next_base_address(unsigned int);
+	void increment_memory_map_number();
 	void set_cumulative_program_instructions(char* p_token);
 	// _defList mutators
 	void insert_symbol_to_def_list(char* p_token);
@@ -35,6 +37,7 @@ public:
 	unsigned int get_module_number();
 	unsigned int get_curr_base_address();
 	unsigned int get_next_base_address();
+	unsigned int get_memory_map_number();
 	unsigned int get_cumulative_program_instructions();
 	// _defList getter
 	vector<char*> get_def_list();
@@ -54,6 +57,7 @@ private:
 	unsigned int _moduleNumber;
 	unsigned int _currBaseAddress;
 	unsigned int _nextBaseAddress;
+	unsigned int _memoryMapNumber; // increment for each program instruction processed in pass two
 	unsigned int _cumulativeProgramInstructions; // cumulative number of instructions for *all* modules processed
 	
 	/* _defList use case:

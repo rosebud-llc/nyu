@@ -47,7 +47,7 @@ void exit_on_parse_error(unsigned int errorCode,
 
 void set_string_start_from_matching_token(string& line, char* p_token, unsigned int& tokenOffset)
 {
-	cout << "ORIG_LINE: " << line << endl;
+	//cout << "ORIG_LINE: " << line << endl;
 	if (p_token != 0)
 	{
 		stringstream ss;
@@ -55,23 +55,23 @@ void set_string_start_from_matching_token(string& line, char* p_token, unsigned 
 		string::iterator s_itr = line.begin();
 		for (; s_itr != line.end(); ++s_itr)
 		{
-			cout << "str_itr == " << *s_itr << endl;
+			//cout << "str_itr == " << *s_itr << endl;
 			// Increment tokenOffset by number of tabs processed
 			if (*s_itr == '\t' && !stopCountingTabs)
 			{
-				cout << "is tab && doNotStopCountingTabs" << endl;
+				//cout << "is tab && doNotStopCountingTabs" << endl;
 				tokenOffset++;
 			}
 			// Stop counting tabs once matching token found
 			else if (*s_itr == *p_token && !stopCountingTabs)
 			{
-				cout << "stop counting tabs b/c str_itr == p_token " << endl;
+				//cout << "stop counting tabs b/c str_itr == p_token " << endl;
 				stopCountingTabs = true;
 			}
 			// When done counting tabs, concatenate substring starting from token
 			else if (stopCountingTabs)
 			{
-				cout << "send str_itr to stringstream" << endl;
+				//cout << "send str_itr to stringstream" << endl;
 				ss << *s_itr;
 			}
 		}
@@ -255,10 +255,10 @@ void tokenizerPassTwo(string& line,
                 }
                 while(validator->tokenCount > 0)
                 {       
-                        unsigned int is_valid_syntax = validator_handler(p_token, validator, symbolTable, moduleData);
-                        if (is_valid_syntax > 0)
+                        unsigned int is_valid_processor = processor_handler(p_token, validator, symbolTable, moduleData);
+                        if (is_valid_processor > 0)
                         {       
-                                exit_on_parse_error(is_valid_syntax,lineNumber,tokenOffset);
+                                exit_on_parse_error(is_valid_processor,lineNumber,tokenOffset);
                         }
                         
                         // Next Token
@@ -293,10 +293,14 @@ void tokenizerPassTwo(string& line,
 }
 
 //TODO: should this produce a symbol_table? Will be need for passTwo
-void processFileStream(ifstream& input_file_stream)
+void processFileStream(const char* input_file_name)
 {
-	if (input_file_stream.is_open())
-	{
+	ifstream input_file_stream;
+	input_file_stream.open(input_file_name);
+	
+	//TODO move variable needed on both file reads outside this is_open check and do the close/open outside the if block for 2nd pass
+	//if (input_file_stream.is_open())
+	//{
 		//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Start reading from file stream." << endl;
 
 		string line;
@@ -343,9 +347,37 @@ void processFileStream(ifstream& input_file_stream)
 		// Deallocate mem
 		delete_validator_queue(validators);
 		// TODO: symbolTable must be updated during definition validation. key_strcmp must be defined outside class (can't refernce class members when function is static)
-		symbolTable.delete_symbol_table_keys();
+		//	NOTE: this has been moved to after Pass Two below
+		// symbolTable.delete_symbol_table_keys();
 		// Close file stream
 		input_file_stream.close();
+		
+		// Pass Two
+		cout << "START SECOND PASS" << endl;
+		cout << "\nMemory Map" << endl;
+
+		ifstream input_file_stream2;
+		input_file_stream2.open(input_file_name);
+		//TODO add a second input_file_stream2.is_open() check here
+		unsigned int lineNumber2 = 0;
+		queue<ValidatorData*> validators2 = initialize_validator_queue();
+		ModuleData moduleData2;
+		while(getline(input_file_stream2, line))
+		{
+			lineNumber2++;
+			cout << "LINE# " << lineNumber2 << ": " << line << endl;
+			if (!validators2.empty()) 
+			{
+				//TODO: i don't think we need lineNumber and tokenOffset for 2nd pass
+				tokenizerPassTwo(line,lineNumber,tokenOffset,validators2,symbolTable,moduleData2);
+			}
+		}
+		delete_validator_queue(validators2);
+		symbolTable.delete_symbol_table_keys();
+		input_file_stream2.close();
+
+
+		//TODO - delete this stuff
 		//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Finished reading from file stream." << endl;
 		/*
 		symbolTable.add_symbol_info("Hello World!",12345,true,false);
@@ -354,11 +386,11 @@ void processFileStream(ifstream& input_file_stream)
 		symbolTable.print_symbols();
 		symbolTable.delete_symbols();
 		*/
-	}
-	else
-	{
-		cout << getLogPrefix(__FILE__,__func__,__LINE__) << "ERROR: Unable to open file stream." << endl;
-	}
+	//}
+	//else
+	//{
+	//	cout << getLogPrefix(__FILE__,__func__,__LINE__) << "ERROR: Unable to open file stream." << endl;
+	//}
 }
 
 
