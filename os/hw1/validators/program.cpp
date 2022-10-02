@@ -14,9 +14,9 @@ static const set<char> valid_program_instruction_types(
 //static
 unsigned int ProgramValidator::is_valid_token_count(char* p_token, ModuleData& moduleData)
 {
-	cout << "Validating Token Count: " << p_token 
-		<< " with cumulative program instructions count: " 
-		<< moduleData.get_cumulative_program_instructions() << endl;
+	//cout << "Validating Token Count: " << p_token 
+	//	<< " with cumulative program instructions count: " 
+	//	<< moduleData.get_cumulative_program_instructions() << endl;
 
 	unsigned int result = 0;
 
@@ -29,20 +29,21 @@ unsigned int ProgramValidator::is_valid_token_count(char* p_token, ModuleData& m
 	static const unsigned int errorTooManyInstr = 7;
 	static const unsigned int maxCumulativeProgramInstructions = 512;
 	moduleData.set_cumulative_program_instructions(p_token);
-	cout << "New cumulative program instructions count: " 
-		<< moduleData.get_cumulative_program_instructions() << endl; 
+	//cout << "New cumulative program instructions count: " 
+	//	<< moduleData.get_cumulative_program_instructions() << endl; 
 	if ( moduleData.get_cumulative_program_instructions() >
 		maxCumulativeProgramInstructions)
 	{
 		result = errorTooManyInstr;
 	}
 
-	cout << "Token Validation Result: " << result << endl;
+	//cout << "Token Validation Result: " << result << endl;
 	return result;
 }
 
 //Static
 //TODO: does it matter if type is upper or lower case?
+//TODO: check if these checks are necessary in passOne, some of them seem like its handled in passTwo
 unsigned int ProgramValidator::is_valid_program_type(char* p_token)
 {
 	//TODO - move all NULL checks to the start of every function or they will segfault
@@ -52,18 +53,18 @@ unsigned int ProgramValidator::is_valid_program_type(char* p_token)
 	//TODO: should we do this null check everywhere? - maybe not since this is not a valid error and should be caught upstream
 	if (p_token == 0)
 	{
-		cout << "ERROR: Token is empty/NULL"  << endl;
+		//cout << "ERROR: Token is empty/NULL"  << endl;
 		result = errorAddrExpected;
 		return result;
 	}
-	cout <<" Validating program type: " << p_token << endl;
+	//cout <<" Validating program type: " << p_token << endl;
 
 	if(!valid_program_instruction_types.empty())
 	{
 		unsigned int token_length = strlen(p_token);
 		if (token_length > 1)
 		{
-			cout << "ERROR: Invalid program type: " << p_token << ". Type name length too long: " << token_length << endl;
+			//cout << "ERROR: Invalid program type: " << p_token << ". Type name length too long: " << token_length << endl;
 			result = errorAddrExpected;
 		}
 		// Should we do these p_token != 0 checks everywhere?
@@ -75,7 +76,7 @@ unsigned int ProgramValidator::is_valid_program_type(char* p_token)
 		}
 		else
 		{
-			cout << "ERROR: Invalid program type: " << p_token << endl;
+			//cout << "ERROR: Invalid program type: " << p_token << endl;
 			result = errorAddrExpected;
 		}
 	}
@@ -85,7 +86,7 @@ unsigned int ProgramValidator::is_valid_program_type(char* p_token)
 		cout << "ERROR: set of valid program instruction types is empty!" << endl;
 		result = errorAddrExpected;
 	}
-	cout << "Program Type Valiation Result: " << result << endl;
+	//cout << "Program Type Valiation Result: " << result << endl;
 	return result;
 }
 
@@ -105,16 +106,16 @@ unsigned int ProgramValidator::is_valid_program_instruction(char* p_token)
 		//cout << "Program Instruction Validation Result: " << result << endl;
 		return result;
 	}
-	cout << "Validating Program Instruction: " << p_token << endl;
+	//cout << "Validating Program Instruction: " << p_token << endl;
 	//TODO: need to add NULL check at start of this function similar to is_valid_symbol() or will throw error
 	unsigned int token_length = strlen(p_token);
 
 	/* TODO: disabled this check for test case input-19
 	unsigned int required_integer_length = 4;
-	cout << "token length: " << token_length << endl;
+	//cout << "token length: " << token_length << endl;
 	if (token_length != required_integer_length)
 	{
-		cout << "ERROR: Instruction length does not equal required integer length." << endl;
+		//cout << "ERROR: Instruction length does not equal required integer length." << endl;
 		result = errorNumExpected;
 		//cout << "Program Instruction Validation Result: " << result << endl;
 		return result;
@@ -126,7 +127,7 @@ unsigned int ProgramValidator::is_valid_program_instruction(char* p_token)
 	{
 		if (!isdigit(p_token[i],loc))
 		{
-			cout << "ERROR: Invalid digit: " << p_token[i] << endl;
+			//cout << "ERROR: Invalid digit: " << p_token[i] << endl;
 			result = errorNumExpected;
 			//cout << "Program Instruction Validation Result: " << result << endl;
 			return result;
@@ -139,7 +140,7 @@ unsigned int ProgramValidator::is_valid_program_instruction(char* p_token)
 
 	}
 	*/
-	cout << "Program Instruction Validation Result: " << result << endl;
+	//cout << "Program Instruction Validation Result: " << result << endl;
 	return result;
 }
 

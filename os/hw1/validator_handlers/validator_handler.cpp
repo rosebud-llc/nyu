@@ -22,34 +22,34 @@ unsigned int validator_handler(char* p_token,
 	if (validatorType == 0)
 	{
 		//TODO rm tokenCount and just pass validator
-		cout << "Definition Handler" << endl;
+		//cout << "Definition Handler" << endl;
 		result = definition_handler(p_token, validator, symbolTable, moduleData, onlyEvaluateCount);
-		cout << "Definition Handler Result: " << result << endl;
+		//cout << "Definition Handler Result: " << result << endl;
 	}
 	// Use Handler
 	else if (validatorType == 1)
 	{
 		//TODO rm tokenCount and just pass validator
-		cout << "Use Handler" << endl;
+		//cout << "Use Handler" << endl;
 		//cout << "Only Evaluate Count? " << onlyEvaluateCount << endl;
 		result = use_handler(p_token, tokenCount, onlyEvaluateCount);
-		cout << "Use Handler Result: " << result << endl;
+		//cout << "Use Handler Result: " << result << endl;
 	}
 	// Program Handler
 	else if (validatorType == 2)
 	{
 		//TODO rm tokenCount and just pass validator
-		cout << "Program Handler" << endl;
+		//cout << "Program Handler" << endl;
 		result = program_handler(p_token, 
 				tokenCount, 
 				moduleData,
 				onlyEvaluateCount);
-		cout << "Program Handler Result: " << result << endl;
+		//cout << "Program Handler Result: " << result << endl;
 	}
 	// Unknown Validator Type
 	else
 	{
-		//cout << "ERROR: Unknown validator type: " << validatorType << endl;
+		cout << "ERROR: Unknown validator type: " << validatorType << endl;
 	}
 	return result;
 }

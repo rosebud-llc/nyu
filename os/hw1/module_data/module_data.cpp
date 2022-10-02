@@ -124,4 +124,7 @@ vector<char*> ModuleData::get_def_list()
 	return _defList;
 }
 
-
+vector<pair<char*, bool> > ModuleData::get_use_list()
+{
+	return _useList;
+}

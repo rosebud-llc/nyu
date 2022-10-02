@@ -97,7 +97,7 @@ unsigned int SymbolTable::get_symbol_address(char* p_token)
 		}
 		else
 		{
-			cout << "ERROR: Symbol not found in table. Returning 0 as default." << endl;
+			//cout << "ERROR: Symbol not found in table. Returning 0 as default." << endl;
 			return 0;
 		}
 }

@@ -353,7 +353,7 @@ void processFileStream(const char* input_file_name)
 		input_file_stream.close();
 		
 		// Pass Two
-		cout << "START SECOND PASS" << endl;
+		//cout << "START SECOND PASS" << endl;
 		cout << "\nMemory Map" << endl;
 
 		ifstream input_file_stream2;
@@ -365,7 +365,7 @@ void processFileStream(const char* input_file_name)
 		while(getline(input_file_stream2, line))
 		{
 			lineNumber2++;
-			cout << "LINE# " << lineNumber2 << ": " << line << endl;
+			//cout << "LINE# " << lineNumber2 << ": " << line << endl;
 			if (!validators2.empty()) 
 			{
 				//TODO: i don't think we need lineNumber and tokenOffset for 2nd pass

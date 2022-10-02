@@ -44,7 +44,8 @@ public:
 	// _defMap getter
 	
 	// _useList getter
-
+	vector<pair<char*, bool> > get_use_list();
+	
 private:
 	struct key_strcmp
         {

@@ -19,7 +19,7 @@ unsigned int use_handler(char* p_token,
 	{
 		// NOTE: Use List is made up of Definition Symbols, which is why we use DefinitionValidator class's implementation
 		result = UseValidator::is_valid_symbol(p_token);
-		cout << "is_valid_symbol: " << result << endl;
+		//cout << "is_valid_symbol: " << result << endl;
 	}
 	return result;
 }

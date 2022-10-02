@@ -9,7 +9,7 @@
 //static
 unsigned int DefinitionValidator::is_valid_token_count(char* p_token)
 {
-	cout << "Validating Token Count: " << p_token << endl;
+	//cout << "Validating Token Count: " << p_token << endl;
 
 	unsigned int result = 0;
 
@@ -25,7 +25,7 @@ unsigned int DefinitionValidator::is_valid_token_count(char* p_token)
 	{
 		result = errorTooManyDef;
 	}
-	cout << "Token Validation Result: " << result << endl;
+	//cout << "Token Validation Result: " << result << endl;
 	return result;
 }
 
@@ -34,7 +34,7 @@ unsigned int DefinitionValidator::is_valid_token_count(char* p_token)
 unsigned int DefinitionValidator::is_valid_relative_address(char* p_token,
 		ValidatorData* validator)
 {
-	cout << "Validating Relative Address: " << p_token << endl;
+	//cout << "Validating Relative Address: " << p_token << endl;
 
 	unsigned int result = 0;
 	static const unsigned int errorNumExpected = 1;
@@ -46,13 +46,13 @@ unsigned int DefinitionValidator::is_valid_relative_address(char* p_token,
 	{
 		if (!isdigit(p_token[i],loc))
 		{
-			cout << "ERROR: Invalid digit: " << p_token[i] << endl;
+			//cout << "ERROR: Invalid digit: " << p_token[i] << endl;
 			result = errorNumExpected;
 			//cout << "Address Validation Result: " << result << endl;
 			return result;
 		}
 	}
-	cout << "Address Validation Result: " << result << endl;
+	//cout << "Address Validation Result: " << result << endl;
 	return result;
 }
 

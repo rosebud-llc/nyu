@@ -16,17 +16,17 @@ unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 
 	if (p_token == 0)
 	{
-		cout << "ERROR: Invalid Symbol. Token is null." << endl;
+		//cout << "ERROR: Invalid Symbol. Token is null." << endl;
 		return errorSymExpected;
 	}
 
-	cout << "Validating Symbol: " << p_token << endl;
+	//cout << "Validating Symbol: " << p_token << endl;
 
 	static const unsigned int max_token_length = 16;
 	unsigned int token_length = strlen(p_token);
 	if (token_length > max_token_length)
 	{
-		cout << "ERROR: Invalid Symbol. Symbol length is greater than " << max_token_length << " characters." << endl;
+		//cout << "ERROR: Invalid Symbol. Symbol length is greater than " << max_token_length << " characters." << endl;
 		result = errorSymTooLong;
 		return result;
 	}
@@ -37,7 +37,7 @@ unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 		{
 			if (!isalpha(p_token[i]))
 			{
-				cout << "ERROR: Invalid Symbol. First char is not alphabetic: " << p_token[i] << endl;
+				//cout << "ERROR: Invalid Symbol. First char is not alphabetic: " << p_token[i] << endl;
 				result = errorSymExpected;
 				return result;
 			}
@@ -45,13 +45,13 @@ unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 		}
 		if (!isalnum(p_token[i]))
 		{
-			cout << "ERROR: Invalid Symbol. Symbol is not alphanumeric: " << p_token[i] << endl;
+			//cout << "ERROR: Invalid Symbol. Symbol is not alphanumeric: " << p_token[i] << endl;
 			result = errorSymExpected;
 			return result;
 		}
 	}
 
-	cout << "Symbol Validation Result: " << result << endl;
+	//cout << "Symbol Validation Result: " << result << endl;
 	return result;
 }
 
