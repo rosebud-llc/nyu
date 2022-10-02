@@ -12,6 +12,7 @@
 #include <validator_data/validator_data.h> // key_strcmp
 #include <validator_handlers/validator_handler.h>
 #include <validator_queue/validator_queue.h> // initialize_validator_queue, delete_validator_queue, reorder_validator_queue
+#include <processor_handlers/processor_handler.h>
 using namespace std;
 
 // You MUST keep ordered list of USE list symbols on second pass so that you know how which symbol to apply for an E instruction
@@ -46,6 +47,7 @@ void exit_on_parse_error(unsigned int errorCode,
 
 void set_string_start_from_matching_token(string& line, char* p_token, unsigned int& tokenOffset)
 {
+	cout << "ORIG_LINE: " << line << endl;
 	if (p_token != 0)
 	{
 		stringstream ss;
@@ -53,19 +55,23 @@ void set_string_start_from_matching_token(string& line, char* p_token, unsigned 
 		string::iterator s_itr = line.begin();
 		for (; s_itr != line.end(); ++s_itr)
 		{
+			cout << "str_itr == " << *s_itr << endl;
 			// Increment tokenOffset by number of tabs processed
 			if (*s_itr == '\t' && !stopCountingTabs)
 			{
+				cout << "is tab && doNotStopCountingTabs" << endl;
 				tokenOffset++;
 			}
 			// Stop counting tabs once matching token found
 			else if (*s_itr == *p_token && !stopCountingTabs)
 			{
+				cout << "stop counting tabs b/c str_itr == p_token " << endl;
 				stopCountingTabs = true;
 			}
 			// When done counting tabs, concatenate substring starting from token
 			else if (stopCountingTabs)
 			{
+				cout << "send str_itr to stringstream" << endl;
 				ss << *s_itr;
 			}
 		}
@@ -198,6 +204,92 @@ void tokenize(string& line,
 	//cout << "deallocate mem" << endl;
 	delete[] p_cstring;
 	return;
+}
+
+void tokenizerPassTwo(string& line,
+                unsigned int lineNumber,
+                unsigned int tokenOffset,
+                queue<ValidatorData*>& validators,
+                SymbolTable& symbolTable,
+                ModuleData& moduleData)
+{
+        string orig_line = line;
+        char* p_cstring = convert_string_to_cstring(line);
+        char* p_token = nextToken(p_cstring,tokenOffset);
+
+        ValidatorData* validator = validators.front();
+        while (p_token != 0)
+        {
+                // Start of linker file || ready for next validator || new line has zero items to read
+                if (validator->tokenCount == 0)
+                {       
+                        // First, validate count
+			// TODO - change this to processor_handler 
+                        unsigned int is_valid_count = validator_handler(p_token, validator, symbolTable, moduleData, true);
+                        // No error checking required to EXIT since this is passTwo
+			if (is_valid_count > 0)
+                        {       
+                                exit_on_parse_error(is_valid_count,lineNumber,tokenOffset);
+                        }
+                        // Then set count
+                        set_validator_count(p_token,validator,symbolTable,moduleData);
+                        if (validator->tokenCount == 0)
+                        {       
+                                reorder_validator_queue(validators);
+                                validator = validators.front();
+                        }
+                        // Next Token
+                        if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
+                        p_token = nextToken(NULL, tokenOffset);
+                        set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
+                        if(p_token != NULL)
+                        {        
+                                strcpy(validator->currToken,p_token); // update currToken
+                        }
+                        else // token is NULL, exit from tokenizer() and getline on next iteration to process
+                        {       
+                                delete[] p_cstring;
+                                return;
+                        }
+                        if(p_token == NULL) cout << "Token is null!" << endl;
+                }
+                while(validator->tokenCount > 0)
+                {       
+                        unsigned int is_valid_syntax = validator_handler(p_token, validator, symbolTable, moduleData);
+                        if (is_valid_syntax > 0)
+                        {       
+                                exit_on_parse_error(is_valid_syntax,lineNumber,tokenOffset);
+                        }
+                        
+                        // Next Token
+                        if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
+                        p_token = nextToken(NULL, tokenOffset);
+                        set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
+                        if(p_token != NULL)
+                        {        
+                                 strcpy(validator->currToken,p_token); // update currToken
+                        
+                        }    
+                        if (validator->tokenCount > 0)
+                        {
+                                validator->tokenCount--;
+                        }
+                        if (validator->tokenCount == 0)
+                        {       
+                                reorder_validator_queue(validators);
+                                validator = validators.front();
+                                break;
+                        }
+                        if(p_token == NULL) // this is the same check as when you return during the set count loop above.
+                        {       
+                                delete[] p_cstring;
+                                return;
+                        }
+                }
+        }
+        // Deallocate mem
+        delete[] p_cstring;
+        return;
 }
 
 //TODO: should this produce a symbol_table? Will be need for passTwo
