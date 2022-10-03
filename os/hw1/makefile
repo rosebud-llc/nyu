@@ -19,7 +19,7 @@ $(TARGET): linker.cpp
 	$(CC) $(CFLAGS) -o $(TARGET) linker.cpp $(SOURCES) -I . -I io_handlers -I validators -I validator_factory -I validator_data -I validator_handlers -I processor_handlers -I validator_queue -I symbol_table -I module_data -I tokenizer
 
 run:
-	./main -i lab1_assign/input-10
+	./main -i lab1_assign/input-6
 
 	
 clean:

@@ -1,5 +1,6 @@
 #include <module_data.h>
 
+#include <iostream> // cout, endl
 #include <string.h> // strcpy
 #include <stdlib.h> // strtol
 
@@ -53,12 +54,27 @@ void ModuleData::set_cumulative_program_instructions(char* p_token)
 
 void ModuleData::insert_symbol_to_def_map(char* p_token, unsigned int moduleNumber)
 {
-	//TODO - need to delete symbols from _defSet
 	char* symbol = new char [sizeof(p_token)];
 	if(p_token != NULL) strcpy(symbol,p_token);
 	// Initialize symbol with module number it is first defined in and set usedFlag to false
 	_defMap.insert(make_pair(symbol, 
 		make_pair(moduleNumber,false)));
+}
+
+void ModuleData::set_symbol_to_used_in_def_map(char* p_token)
+{
+	
+	map<char*, pair<unsigned int, bool>, key_strcmp >::iterator it 
+		= _defMap.find(p_token);
+	if(it == _defMap.end())
+	{
+		//TODO note this would throw an error for input-6, but here we treat as no-op
+		//cout << "ERROR: unable to update symbol's usedFlag - does not exist in _defMap" << endl;
+	}
+	else
+	{
+		it->second.second = true;
+	}
 }
 
 void ModuleData::clear_symbols_from_def_map()
@@ -127,4 +143,24 @@ vector<char*> ModuleData::get_def_list()
 vector<pair<char*, bool> > ModuleData::get_use_list()
 {
 	return _useList;
+}
+
+void ModuleData::print_unused_symbols()
+{
+	bool prependNewLine = true;
+	map<char*, pair<unsigned int,bool>, key_strcmp >::const_iterator c_it 
+		= _defMap.begin();
+	for(; c_it != _defMap.end(); ++c_it)
+	{
+		if (!c_it->second.second) 
+		{
+			if (prependNewLine)
+			{
+				cout << "\n";
+				prependNewLine = false;
+			}
+			cout << "Warning: Module " << c_it->second.first << ": " 
+				<< c_it->first << " was defined but never used" << endl;
+		}
+	}
 }

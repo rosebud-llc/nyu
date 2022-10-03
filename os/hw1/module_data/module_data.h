@@ -28,6 +28,7 @@ public:
 	void clear_symbols_from_def_list();
 	// _defMap mutators
 	void insert_symbol_to_def_map(char* p_token, unsigned int moduleNumber);
+	void set_symbol_to_used_in_def_map(char* p_token);
 	void clear_symbols_from_def_map();
 	// _useList mutator
 	void insert_symbol_to_use_list(char* p_token);
@@ -42,7 +43,7 @@ public:
 	// _defList getter
 	vector<char*> get_def_list();
 	// _defMap getter
-	
+	void print_unused_symbols();
 	// _useList getter
 	vector<pair<char*, bool> > get_use_list();
 	

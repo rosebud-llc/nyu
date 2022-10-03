@@ -372,6 +372,7 @@ void processFileStream(const char* input_file_name)
 				tokenizerPassTwo(line,lineNumber,tokenOffset,validators2,symbolTable,moduleData2);
 			}
 		}
+		moduleData2.print_unused_symbols();
 		delete_validator_queue(validators2);
 		symbolTable.delete_symbol_table_keys();
 		input_file_stream2.close();
