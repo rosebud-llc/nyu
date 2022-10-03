@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <utility> // pair
+#include <string.h> // strcmp
 using namespace std;
 
 class ModuleData
