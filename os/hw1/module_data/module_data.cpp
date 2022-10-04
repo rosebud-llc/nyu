@@ -97,6 +97,17 @@ void ModuleData::insert_symbol_to_use_list(char* p_token)
 	_useList.push_back(make_pair(symbol,false));
 }
 
+// position is 0-based counting
+void ModuleData::set_symbol_to_used_in_use_list(unsigned int position)
+{
+	if (position >= _useList.size())
+	{
+		// cout << "Position: " << position << " exceeds size of _useList. Aborting." << endl;
+		return;
+	}
+	_useList.at(position).second = true;
+}
+
 void ModuleData::clear_symbols_from_use_list()
 {
 	vector<pair<char*,bool> >::iterator it = _useList.begin();

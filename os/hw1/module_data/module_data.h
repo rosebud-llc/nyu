@@ -34,6 +34,7 @@ public:
 	void clear_symbols_from_def_map();
 	// _useList mutator
 	void insert_symbol_to_use_list(char* p_token);
+	void set_symbol_to_used_in_use_list(unsigned int position);
 	void clear_symbols_from_use_list();
 	// _useSet mutator
 	void insert_symbol_to_use_set(char* p_token);

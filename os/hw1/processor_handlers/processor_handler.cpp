@@ -29,7 +29,7 @@ unsigned int processor_handler(char* p_token,
 	else if (validatorType == 1)
 	{
 		//cout << "Process Use List Handler" << endl;
-		result = use_processor(p_token, 
+		result = use_processor(p_token,
 				moduleData);
 		//cout << "Process Use List Result: " << result << endl;
 	}

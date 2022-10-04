@@ -9,7 +9,7 @@ unsigned int use_processor(char* p_token,
 	unsigned int result = 0;
 	// Use List Symbols
 	// - add symbol to _useList vector
-	// - set usedFlag to false
+	// - set usedFlag to false	
 	moduleData.insert_symbol_to_use_list(p_token);
 	return result;
 }

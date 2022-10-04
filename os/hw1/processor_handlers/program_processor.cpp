@@ -59,17 +59,23 @@ string process_external(stringstream& ss,
 		{
 			// Rule 3
 			ss << "000 Error: " << useList.at(operand).first << " is not defined; zero used"; 
+			
+			//TODO hacky solution to avoid printing warning at the end of the module if symbol in useList but not used in module
+			moduleData.set_symbol_to_used_in_use_list(operand);
 		}
 		else
 		{
 			unsigned int global_address 
 				= symbolTable.get_symbol_address(useList.at(operand).first);
 			ss << setfill('0') << setw(3) << global_address; 
+			
 			//TODO check that you're actually setting this to true otherwise you'll fail Rule 7 for module i.e. not all symbols in useList were used
-			useList.at(operand).second = true;
+			moduleData.set_symbol_to_used_in_use_list(operand);
+
 			// TODO there are cases where a symbol is used, but it is not added to _defMap because it's defined later, so this will not set symbol to used
 			moduleData.set_symbol_to_used_in_def_map(
 				useList.at(operand).first);
+			
 			// TODO instead, we use this _useSet over course of the Program inspect whether or not symbols actually used
 			moduleData.insert_symbol_to_use_set(
 				useList.at(operand).first);
@@ -144,7 +150,7 @@ string process_instruction(char* program_type,
         else if (strcmp(program_type,"I") == 0)
         {
 		// Note: program_type "I" errors are handled when inspecting opcode above
-                ss << operand;
+                ss << setfill('0') << setw(3) << operand;
 		return ss.str();
         }
         else if (strcmp(program_type,"A") == 0)
