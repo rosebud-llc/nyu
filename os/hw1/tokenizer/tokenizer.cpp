@@ -315,8 +315,11 @@ void processFileStream(const char* input_file_name)
 		ModuleData moduleData;
 		while(getline(input_file_stream1, line))
 		{
-			lineNumber++;
-			tokenOffset = 0;
+			if (input_file_stream1.peek() != EOF)
+			{
+				lineNumber++;
+				tokenOffset = 0;
+			}
 			cout << "LINE#" << lineNumber << ": " << line << endl;
 			if (!validators.empty())
 			{
@@ -367,7 +370,7 @@ void processFileStream(const char* input_file_name)
 		while(getline(input_file_stream2, line))
 		{
 			lineNumber++;
-			tokenOffset = 0;
+			//tokenOffset = 0;
 			//cout << "LINE# " << lineNumber << ": " << line << endl;
 			if (!validators.empty()) 
 			{
