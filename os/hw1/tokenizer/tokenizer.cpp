@@ -50,28 +50,33 @@ void set_string_start_from_matching_token(string& line, char* p_token, unsigned 
 	//cout << "ORIG_LINE: " << line << endl;
 	if (p_token != 0)
 	{
+		cout << "p_token == " << p_token << endl;
 		stringstream ss;
 		bool stopCountingTabs = false;
 		string::iterator s_itr = line.begin();
 		for (; s_itr != line.end(); ++s_itr)
 		{
-			//cout << "str_itr == " << *s_itr << endl;
+			cout << "str_itr == " << *s_itr << endl;
 			// Increment tokenOffset by number of tabs processed
 			if (*s_itr == '\t' && !stopCountingTabs)
 			{
-				//cout << "is tab && doNotStopCountingTabs" << endl;
+				cout << "is tab && doNotStopCountingTabs" << endl;
+				cout << "incrementing tokenOffset by 1" << endl;
 				tokenOffset++;
 			}
 			// Stop counting tabs once matching token found
+			// TODO does this work comparing string to dereferenced c-string?
 			else if (*s_itr == *p_token && !stopCountingTabs)
 			{
-				//cout << "stop counting tabs b/c str_itr == p_token " << endl;
+				cout << "stop counting tabs b/c str_itr == p_token " << endl;
+				cout << "incrementing tokenOffset by " << strlen(p_token) << endl;
+				tokenOffset += strlen(p_token);
 				stopCountingTabs = true;
 			}
 			// When done counting tabs, concatenate substring starting from token
 			else if (stopCountingTabs)
 			{
-				//cout << "send str_itr to stringstream" << endl;
+				cout << "send str_itr to stringstream" << endl;
 				ss << *s_itr;
 			}
 		}
@@ -90,13 +95,14 @@ char* convert_string_to_cstring(string& line)
 char* nextToken(char* p_token, unsigned int& tokenOffset)
 {
 	static const char* delims = " \t\n";
-	tokenOffset++;
+	//TODO - now handled by set_string function above sinc each char is +1 token
+	//tokenOffset++;
 	return strtok(p_token,delims);
 }
 
 void tokenize(string& line,
 		unsigned int lineNumber,
-		unsigned int tokenOffset,
+		unsigned int& tokenOffset,
 		queue<ValidatorData*>& validators,
 		SymbolTable& symbolTable,
 		ModuleData& moduleData)
@@ -133,10 +139,10 @@ void tokenize(string& line,
 				//cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
 			}
 			// Next Token
-			//if(p_token != NULL) strcpy(prevToken,p_token);
+			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
-			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
+			//set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
 			if(p_token != NULL)
 			{	 
 				strcpy(validator->currToken,p_token); // update currToken
@@ -144,6 +150,7 @@ void tokenize(string& line,
 			else // token is NULL, exit from tokenizer() and getline on next iteration to process
 			{
 				cout << "EXIT tokenizer because next token is NULL" << endl;
+				cout << "tokenOffset == " << tokenOffset << endl;
 				delete[] p_cstring;
 				return;
 			}
@@ -161,11 +168,10 @@ void tokenize(string& line,
 			}
 
 			// Next Token
-			//if(p_token != NULL) strcpy(prevToken,p_token);
-			//cout << "before strcpy" << endl;
+			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
-			set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
+			//set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
 			if(p_token != NULL)
 			{
 				 strcpy(validator->currToken,p_token); // update currToken
@@ -208,7 +214,7 @@ void tokenize(string& line,
 
 void tokenizerPassTwo(string& line,
                 unsigned int lineNumber,
-                unsigned int tokenOffset,
+                unsigned int& tokenOffset,
                 queue<ValidatorData*>& validators,
                 SymbolTable& symbolTable,
                 ModuleData& moduleData)
@@ -338,6 +344,7 @@ void processFileStream(const char* input_file_name)
 			{
 				cout << "Validator tokenCount is > than zero" << endl;
 				char* p_token = NULL;
+				tokenOffset++; // Increment because it was the 'next' token that failed to process
 				unsigned int is_valid_syntax = validator_handler(p_token,validator,symbolTable,moduleData);
 				cout << "is_valid_syntax == " << is_valid_syntax << endl;
 				if (is_valid_syntax > 0)
