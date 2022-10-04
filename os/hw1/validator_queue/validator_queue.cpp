@@ -46,39 +46,3 @@ void reorder_validator_queue(queue<ValidatorData*>& validators)
 	//cout << "New Front ValidatorType(" << validators.front()->validatorType << ")" << endl;
 }
 
-/*
- * VALIDATOR FACTORY CODE
- */
-/*
-queue<pair<ValidatorFactory*,unsigned int> > initialize_validator_queue()
-{
-	queue<pair<ValidatorFactory*, unsigned int> > validators;
-	// First: Definition
-	ValidatorFactory* def_validator = new CreateDefinitionValidator();
-	validators.push(make_pair(def_validator,0));
-	// Second: Use
-	ValidatorFactory* use_validator = new CreateUseValidator();
-	validators.push(make_pair(use_validator,0));
-	// Third: Program
-	ValidatorFactory* prog_validator = new CreateProgramValidator();
-	validators.push(make_pair(prog_validator,0));
-
-	return validators;
-}
-
-void delete_validator_queue(queue<pair<ValidatorFactory*, unsigned int> > validators)
-{
-	while(!validators.empty())
-	{
-		pair<ValidatorFactory*,unsigned int> validator = validators.front();
-		delete validator.first;
-		validators.pop();
-	}
-}
-
-void reorder_validator_queue(queue<pair<ValidatorFactory*, unsigned int> >& validators)
-{
-	validators.push(validators.front());
-	validators.pop();
-}
-*/

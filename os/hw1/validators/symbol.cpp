@@ -6,7 +6,6 @@
 #include <stdlib.h> // strtoul
 
 
-
 //static
 unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 {
@@ -55,12 +54,3 @@ unsigned int SymbolValidator::is_valid_symbol(char* p_token)
 	return result;
 }
 
-void SymbolValidator::set_symbol(string& symbol)
-{
-	_symbol = symbol;
-}
-
-string SymbolValidator::get_symbol()
-{
-	return _symbol;
-}

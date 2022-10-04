@@ -4,67 +4,7 @@
 #include <stdlib.h> // strtoul
 #include <string>
 #include <iostream>
-/*
-void SymbolTable::load_symbol_table_2()
-{
-	char* t1 = "Hello";
-	SymbolInfo test1;
-	test1._address = 1;
-	test1._isDuplicated = true;
-	test1._isAddressLocked = false;
 
-	char* t2 = "World!";
-	SymbolInfo test2;
-	test2._address = 2;
-	test2._isDuplicated = true;
-	test2._isAddressLocked = true;
-
-	_symbolTable2.insert(make_pair(t1,test1));
-	_symbolTable2.insert(make_pair(t2,test2));
-
-	int count = 0;
-	map<char*, SymbolInfo, key_strcmp>::iterator it = _symbolTable2.begin();
-	for(; it != _symbolTable2.end(); ++it)
-	{
-		cout << "Test " << count << ": " << it->first << it->second._address << it->second._isDuplicated << it->second._isAddressLocked << endl;
-		count++;
-	}
-}
-*/
-void SymbolTable::add_symbol_info(char* symbol, unsigned int address, bool isDuplicated, bool isAddressLocked)
-{
-	cout << "Adding new symbol: " << symbol << endl;
-	SymbolInfo* symbolInfo = new SymbolInfo;
-	symbolInfo->_address = address;
-	symbolInfo->_isDuplicated = isDuplicated;
-	symbolInfo->_isAddressLocked = isAddressLocked;
-	_symbolTable2.insert(make_pair(symbol,symbolInfo));
-	cout << "Symbol added!" << endl;
-}
-
-void SymbolTable::print_symbols()
-{
-	map<char*, SymbolInfo*, key_strcmp >::iterator map_itr =
-			_symbolTable2.begin();
-	for(; map_itr != _symbolTable2.end(); ++map_itr)
-	{
-		cout << "Symbol: " << map_itr->first
-				<< " Address: " << map_itr->second->_address
-				<< " isDuplicated: " << map_itr->second->_isDuplicated
-				<< " isAddressLocked: " << map_itr->second->_isAddressLocked
-				<< endl;
-	}
-}
-
-void SymbolTable::delete_symbols()
-{
-	map<char*, SymbolInfo*, key_strcmp >::iterator map_itr =
-			_symbolTable2.begin();
-	for(; map_itr != _symbolTable2.end(); ++map_itr)
-	{
-		delete map_itr->second;
-	}
-}
 
 bool SymbolTable::has_symbol(char* p_token)
 {

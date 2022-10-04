@@ -24,12 +24,6 @@ public:
 
 	void delete_symbol_table_keys();
 
-	// _symbolTable2 tests
-	//void load_symbol_table_2();
-	void add_symbol_info(char*,unsigned int,bool,bool);
-	void print_symbols();
-	void delete_symbols();
-
 private:
 	struct key_strcmp
 	{
@@ -39,19 +33,7 @@ private:
 		}
 	};
 
-	struct SymbolInfo
-	{
-		SymbolInfo() :
-			_address(0),
-			_isDuplicated(false),
-			_isAddressLocked(false) {}
-		unsigned int _address;
-		bool _isDuplicated;
-		bool _isAddressLocked;
-	};
-
 	map<char*, pair<unsigned int,bool>, key_strcmp > _symbolTable;
-	map<char*, SymbolInfo*, key_strcmp > _symbolTable2;
 };
 
 #endif

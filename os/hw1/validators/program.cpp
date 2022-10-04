@@ -145,36 +145,3 @@ unsigned int ProgramValidator::is_valid_program_instruction(char* p_token)
 }
 
 
-bool ProgramValidator::process(char* p_token) const
-{
-	cout << "ProgramValidator processing: " << p_token << endl;
-	return true;
-}
-
-ProgramValidator::ValidatorType::validator_enum ProgramValidator::get_validator_enum() const
-{
-	cout << "ProgramValidator ENUM: " << validatorType.PROGRAM << endl;
-	return validatorType.PROGRAM;
-}
-
-void ProgramValidator::set_instruction_type(char* instruction_type)
-{
-	_instruction_type = instruction_type;
-}
-
-char* ProgramValidator::get_instruction_type()
-{
-	return _instruction_type;
-}
-
-void ProgramValidator::set_instruction_id(unsigned int instruction_id)
-{
-	_instruction_id = instruction_id;
-}
-
-unsigned int ProgramValidator::get_instruction_id()
-{
-	return _instruction_id;
-}
-
-

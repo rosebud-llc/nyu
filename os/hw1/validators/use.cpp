@@ -26,24 +26,3 @@ unsigned int UseValidator::is_valid_token_count(char* p_token)
 	return result;
 }
 
-bool UseValidator::process(char* p_token) const
-{
-	cout << "UseValidator processing: " << p_token << endl;
-	return true;
-}
-
-UseValidator::ValidatorType::validator_enum UseValidator::get_validator_enum() const
-{
-	cout << "UseValidator ENUM: " << validatorType.USE << endl;
-	return validatorType.USE;
-}
-
-void UseValidator::append_symbol(string& symbol)
-{
-	_symbols.push_back(symbol);
-}
-
-unsigned int UseValidator::get_symbols_count()
-{
-	return _symbols.size();
-}
