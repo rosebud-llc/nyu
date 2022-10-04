@@ -5,7 +5,7 @@
 #include <map>
 #include <utility> // pair
 #include <string.h> // strcmp
-#include <unordered_set>
+#include <set>
 using namespace std;
 
 class ModuleData
@@ -96,7 +96,7 @@ private:
 		- at end of Program, update _defMap for any used symbols whose flag was not set to True
 		- scenario in which usedFlag was not set to true can occur when symbol used before it's defined (e.g. input-6)
 	*/
-	unordered_set<char*> _useSet;
+	set<char*> _useSet;
 };
 
 #endif

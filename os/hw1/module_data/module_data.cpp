@@ -77,10 +77,11 @@ void ModuleData::set_symbol_to_used_in_def_map(char* p_token)
 	}
 }
 
+//TODO this function can be deleted / fixed?
 void ModuleData::clear_symbols_from_def_map()
 {
 	//TODO: delete elements from map
-	/*unordered_set<pair<char*, pair<unsigned int, bool> > >::iterator it 
+	/*set<pair<char*, pair<unsigned int, bool> > >::iterator it 
 		= _defSet.begin();
 	for(; it != _defSet.end(); ++it)
 	{
@@ -120,7 +121,7 @@ void ModuleData::clear_symbols_from_use_list()
 
 void ModuleData::insert_symbol_to_use_set(char* p_token)
 {
-	unordered_set<char*>::const_iterator c_it = _useSet.begin();
+	set<char*>::const_iterator c_it = _useSet.begin();
 	for(; c_it != _useSet.end(); ++c_it)
 	{
 		if (strcmp(*c_it,p_token) == 0)
@@ -136,7 +137,7 @@ void ModuleData::insert_symbol_to_use_set(char* p_token)
 
 void ModuleData::clear_symbols_from_use_set()
 {
-	unordered_set<char*>::iterator it = _useSet.begin();
+	set<char*>::iterator it = _useSet.begin();
 	for(; it != _useSet.end(); ++it)
 	{
 		delete *it;
@@ -184,7 +185,7 @@ vector<pair<char*, bool> > ModuleData::get_use_list()
 
 bool ModuleData::use_set_has_symbol(char* p_token)
 {
-	unordered_set<char*>::const_iterator c_it = _useSet.begin();
+	set<char*>::const_iterator c_it = _useSet.begin();
 	for(; c_it != _useSet.end(); ++c_it)
 	{
 		if (strcmp(*c_it,p_token) == 0)

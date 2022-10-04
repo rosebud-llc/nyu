@@ -313,13 +313,14 @@ void processFileStream(const char* input_file_name)
 		unsigned int tokenOffset = 0;
 		queue<ValidatorData*> validators = initialize_validator_queue();
 		ModuleData moduleData;
-		while(getline(input_file_stream1, line))
+		while(input_file_stream1.peek() != EOF) //getline(input_file_stream1, line))
 		{
-			if (input_file_stream1.peek() != EOF)
-			{
+			getline(input_file_stream1,line);
+			//if (input_file_stream1.peek() != EOF)
+			//{
 				lineNumber++;
 				tokenOffset = 0;
-			}
+			//}
 			cout << "LINE#" << lineNumber << ": " << line << endl;
 			if (!validators.empty())
 			{
