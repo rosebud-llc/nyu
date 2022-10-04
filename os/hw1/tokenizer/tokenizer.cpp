@@ -1,6 +1,7 @@
 #include <tokenizer.h>
 
 #include <io_handlers/log_io.h> // getLogPrefix
+#include <ctype.h>    // isspace
 #include <string.h> // strtok
 #include <stdlib.h> // strtol, EXIT_FAILURE
 #include <iostream> // cout, endl
@@ -38,48 +39,50 @@ void exit_on_parse_error(unsigned int errorCode,
 			cout << "errorCode: " << errorCode << " | errorString: " << errorString[i] << endl;
 		}*/
 		cout << "Parse Error line " << lineNum << " offset " << lineOffset << ": " << errorString[errorCode] << endl;
-		//TODO we just need to return b/c this will screw up final print
-		exit(EXIT_FAILURE);
+		//TODO using EXIT_SUCCESS here to avoid extra print line of EXIT_FAILURE that indicates an actual error occured
+		exit(EXIT_SUCCESS);
 	}
 }
 
 void set_string_start_from_matching_token(string& line, char* p_token, unsigned int& tokenOffset)
 {
-	//cout << "ORIG_LINE: " << line << endl;
+	//cout << "Old String: " << line << endl;
 	if (p_token != 0)
 	{
-		cout << "p_token == " << p_token << endl;
+		//cout << "String to find (p_token): " << p_token << endl;
 		stringstream ss;
 		bool stopCountingTabs = false;
 		string::iterator s_itr = line.begin();
 		for (; s_itr != line.end(); ++s_itr)
 		{
-			cout << "str_itr == " << *s_itr << endl;
 			// Increment tokenOffset by number of tabs processed
-			if (*s_itr == '\t' && !stopCountingTabs)
+			if ( !isalnum(*s_itr) && !ispunct(*s_itr) && !stopCountingTabs)
 			{
-				cout << "is tab && doNotStopCountingTabs" << endl;
-				cout << "incrementing tokenOffset by 1" << endl;
+				//cout << "String isempty/isspace && doNotStopCountingTabs... tokenOffset(+1)" << endl;
 				tokenOffset++;
 			}
 			// Stop counting tabs once matching token found
 			// TODO does this work comparing string to dereferenced c-string?
-			else if (*s_itr == *p_token && !stopCountingTabs)
+			else if ( (isalnum(*s_itr) || ispunct(*s_itr)) && !stopCountingTabs)
 			{
-				cout << "stop counting tabs b/c str_itr == p_token " << endl;
-				cout << "incrementing tokenOffset by " << strlen(p_token) << endl;
-				tokenOffset += strlen(p_token);
-				stopCountingTabs = true;
+				//cout << "String isalnum/ispunct && doNotStopCountingTabs... tokenOffset(+1)" << endl;
+				tokenOffset++;
+				if (*s_itr == *p_token)
+				{
+					//cout << "String equals p_token. Stop counting" << endl;
+					stopCountingTabs = true;
+				}
 			}
 			// When done counting tabs, concatenate substring starting from token
 			else if (stopCountingTabs)
 			{
-				cout << "send str_itr to stringstream" << endl;
+				//cout << "Add string (" << *s_itr << ") to stringstream... no tokenOffset increment" << endl;
 				ss << *s_itr;
 			}
 		}
 		// Reset string to substring starting from token
 		line = ss.str();
+		//cout << "New String: " << line << endl;
 	}
 }
 
@@ -96,7 +99,7 @@ char* nextToken(char* p_token, unsigned int& tokenOffset)
 	return strtok(p_token,delims);
 }
 
-void tokenize(string& line,
+void tokenizerPassOne(string& line,
 		unsigned int lineNumber,
 		unsigned int& tokenOffset,
 		queue<ValidatorData*>& validators,
@@ -116,11 +119,13 @@ void tokenize(string& line,
 		if (validator->tokenCount == 0)
 		{
 			// First, validate count
-			cout << "Validate Count: " << p_token << " because validator->tokenCount == " << validator->tokenCount << endl;
+			//cout << "Validate Count: " << p_token << " because validator->tokenCount == " << validator->tokenCount << endl;
 			unsigned int is_valid_count = validator_handler(p_token, validator, symbolTable, moduleData, true);
 			//cout << "BASE ADDRESS.CURR = " << validator->currBaseAddress << endl;
 			//cout << "BASE ADDRESS.NEXT = " << validator->nextBaseAddress << endl;
-			cout << "Is Valid Count: " << is_valid_count << endl;
+			//cout << "Is Valid Count: " << is_valid_count << endl;
+			// Need to calculate tokenOffset before printing Error if count not valid.
+			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if (is_valid_count > 0)
 			{
 				exit_on_parse_error(is_valid_count,lineNumber,tokenOffset);
@@ -135,7 +140,7 @@ void tokenize(string& line,
 				//cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
 			}
 			// Next Token
-			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
+			//set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
 			//set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
@@ -145,12 +150,12 @@ void tokenize(string& line,
 			}
 			else // token is NULL, exit from tokenizer() and getline on next iteration to process
 			{
-				cout << "EXIT tokenizer because next token is NULL" << endl;
-				cout << "tokenOffset == " << tokenOffset << endl;
+				//cout << "EXIT tokenizer because next token is NULL" << endl;
+				//cout << "tokenOffset == " << tokenOffset << endl;
 				delete[] p_cstring;
 				return;
 			}
-			cout << "TOKEN: " << validator->currToken << endl;
+			//cout << "TOKEN: " << validator->currToken << endl;
 			if(p_token == NULL) cout << "Token is null!" << endl;
 		}
 		// Only enter this while loop when you actually have something to process (i.e. count is > 0)
@@ -158,16 +163,16 @@ void tokenize(string& line,
 		{
 			unsigned int is_valid_syntax = validator_handler(p_token, validator, symbolTable, moduleData);
 			//cout << "Is Valid Syntax: " << is_valid_syntax << endl;
+			// Need to calculate tokenOffset before printing Errpr if syntax not valid
+			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if (is_valid_syntax > 0)
 			{
 				exit_on_parse_error(is_valid_syntax,lineNumber,tokenOffset);
 			}
 
 			// Next Token
-			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
-			//set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
 			if(p_token != NULL)
 			{
 				 strcpy(validator->currToken,p_token); // update currToken
@@ -196,7 +201,7 @@ void tokenize(string& line,
 			if(p_token == NULL) // this is the same check as when you return during the set count loop above.
 			// token is NULL, exist from tokenizer() and getline on next iteration to process 
 			{
-				cout << "EXIT tokenizer because next token is NULL" << endl;
+				//cout << "EXIT tokenizer because next token is NULL" << endl;
 				delete[] p_cstring;
 				return;
 			}
@@ -316,15 +321,15 @@ void processFileStream(const char* input_file_name)
 		while(input_file_stream1.peek() != EOF) //getline(input_file_stream1, line))
 		{
 			getline(input_file_stream1,line);
-			//if (input_file_stream1.peek() != EOF)
-			//{
+			if (!line.empty() && input_file_stream1.peek() != EOF)
+			{
 				lineNumber++;
 				tokenOffset = 0;
-			//}
-			cout << "LINE#" << lineNumber << ": " << line << endl;
+			}
+			//cout << "LINE#" << lineNumber << ": " << line << endl;
 			if (!validators.empty())
 			{
-				tokenize(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);
+				tokenizerPassOne(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);
 			}
 		}
 		if (!validators.empty())
@@ -335,11 +340,11 @@ void processFileStream(const char* input_file_name)
 			// provided at the start of each line, but tokenCount was not fully decremented to zero.
 			if (validator->tokenCount > 0)
 			{
-				cout << "Validator tokenCount is > than zero" << endl;
+				//cout << "Validator tokenCount is > than zero" << endl;
 				char* p_token = NULL;
 				tokenOffset++; // Increment because it was the 'next' token that failed to process
 				unsigned int is_valid_syntax = validator_handler(p_token,validator,symbolTable,moduleData);
-				cout << "is_valid_syntax == " << is_valid_syntax << endl;
+				//cout << "is_valid_syntax == " << is_valid_syntax << endl;
 				if (is_valid_syntax > 0)
 				{
 					exit_on_parse_error(is_valid_syntax,lineNumber,tokenOffset);

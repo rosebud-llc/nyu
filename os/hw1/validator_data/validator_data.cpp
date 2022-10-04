@@ -42,7 +42,7 @@ void set_relative_address(char* symbol, SymbolTable& symbolTable, ModuleData& mo
 	// This should not happen - unless it's a test case covered in the paper, must read
 	else
 	{
-		cout << "ERROR: Unable to find Symbol that requires address update!!!" << symbol << endl;
+		//cout << "ERROR: Unable to find Symbol that requires address update!!!" << symbol << endl;
 	}
 }
 } // end anonymous namespace
