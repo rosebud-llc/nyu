@@ -67,7 +67,11 @@ string process_external(stringstream& ss,
 			ss << setfill('0') << setw(3) << global_address; 
 			//TODO check that you're actually setting this to true otherwise you'll fail Rule 7 for module i.e. not all symbols in useList were used
 			useList.at(operand).second = true;
+			// TODO there are cases where a symbol is used, but it is not added to _defMap because it's defined later, so this will not set symbol to used
 			moduleData.set_symbol_to_used_in_def_map(
+				useList.at(operand).first);
+			// TODO instead, we use this _useSet over course of the Program inspect whether or not symbols actually used
+			moduleData.insert_symbol_to_use_set(
 				useList.at(operand).first);
 		}
 	}

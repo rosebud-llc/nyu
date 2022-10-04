@@ -107,6 +107,32 @@ void ModuleData::clear_symbols_from_use_list()
         _useList.erase(_useList.begin(), _useList.end());	
 }
 
+void ModuleData::insert_symbol_to_use_set(char* p_token)
+{
+	unordered_set<char*>::const_iterator c_it = _useSet.begin();
+	for(; c_it != _useSet.end(); ++c_it)
+	{
+		if (strcmp(*c_it,p_token) == 0)
+		{
+			//cout << "Duplicate symbol, do not insert: " << p_token << endl;
+			return;
+		}
+	}
+	char* symbol = new char [sizeof(p_token)];
+	if(p_token != NULL) strcpy(symbol,p_token);
+	_useSet.insert(symbol);
+}
+
+void ModuleData::clear_symbols_from_use_set()
+{
+	unordered_set<char*>::iterator it = _useSet.begin();
+	for(; it != _useSet.end(); ++it)
+	{
+		delete *it;
+	}
+	_useSet.erase(_useSet.begin(), _useSet.end());
+}
+
 /*
  *	Getters
  */ 
@@ -145,14 +171,29 @@ vector<pair<char*, bool> > ModuleData::get_use_list()
 	return _useList;
 }
 
-void ModuleData::print_unused_symbols()
+bool ModuleData::use_set_has_symbol(char* p_token)
 {
+	unordered_set<char*>::const_iterator c_it = _useSet.begin();
+	for(; c_it != _useSet.end(); ++c_it)
+	{
+		if (strcmp(*c_it,p_token) == 0)
+		{
+			return true;
+		}
+	}
+	return false;	
+}
+
+void ModuleData::print_unused_symbols_from_program()
+{
+	// Rule 4
 	bool prependNewLine = true;
 	map<char*, pair<unsigned int,bool>, key_strcmp >::const_iterator c_it 
 		= _defMap.begin();
 	for(; c_it != _defMap.end(); ++c_it)
 	{
-		if (!c_it->second.second) 
+		// If symbol not in _useSet, then it was never used
+		if (!use_set_has_symbol(c_it->first)) 
 		{
 			if (prependNewLine)
 			{
@@ -161,6 +202,21 @@ void ModuleData::print_unused_symbols()
 			}
 			cout << "Warning: Module " << c_it->second.first << ": " 
 				<< c_it->first << " was defined but never used" << endl;
+		}
+	}
+}
+
+void ModuleData::print_unused_symbols_from_module()
+{
+	// Rule 7
+	vector<pair<char*,bool> >::const_iterator c_it = _useList.begin();
+	for(; c_it != _useList.end(); ++c_it)
+	{
+		if (!c_it->second)
+		{
+			cout << "Warning: Module " << _moduleNumber << ": "
+				<< c_it->first
+				<< " appeared in the uselist but was not actually used" << endl;
 		}
 	}
 }

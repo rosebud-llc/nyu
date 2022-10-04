@@ -5,6 +5,7 @@
 #include <map>
 #include <utility> // pair
 #include <string.h> // strcmp
+#include <unordered_set>
 using namespace std;
 
 class ModuleData
@@ -34,6 +35,9 @@ public:
 	// _useList mutator
 	void insert_symbol_to_use_list(char* p_token);
 	void clear_symbols_from_use_list();
+	// _useSet mutator
+	void insert_symbol_to_use_set(char* p_token);
+	void clear_symbols_from_use_set();
 
 	// getters for unsigned int private member variables
 	unsigned int get_module_number();
@@ -44,9 +48,12 @@ public:
 	// _defList getter
 	vector<char*> get_def_list();
 	// _defMap getter
-	void print_unused_symbols();
+	void print_unused_symbols_from_program();
 	// _useList getter
 	vector<pair<char*, bool> > get_use_list();
+	void print_unused_symbols_from_module();
+	// _useSet getter
+	bool use_set_has_symbol(char* p_token);
 	
 private:
 	struct key_strcmp
@@ -83,6 +90,12 @@ private:
 		- at end of module, if symbol unused, print warning Rule 7
 	*/
 	vector<pair<char*, bool> > _useList;
+	/* _useSet use case
+		- insert each 'used' symbol for given 'E' instruction
+		- at end of Program, update _defMap for any used symbols whose flag was not set to True
+		- scenario in which usedFlag was not set to true can occur when symbol used before it's defined (e.g. input-6)
+	*/
+	unordered_set<char*> _useSet;
 };
 
 #endif

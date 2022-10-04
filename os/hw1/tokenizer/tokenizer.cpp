@@ -223,7 +223,7 @@ void tokenizerPassTwo(string& line,
                 // Start of linker file || ready for next validator || new line has zero items to read
                 if (validator->tokenCount == 0)
                 {       
-                        // First, validate count
+			// First, validate count
 			// TODO - change this to processor_handler 
                         unsigned int is_valid_count = validator_handler(p_token, validator, symbolTable, moduleData, true);
                         // No error checking required to EXIT since this is passTwo
@@ -276,7 +276,12 @@ void tokenizerPassTwo(string& line,
                         }
                         if (validator->tokenCount == 0)
                         {       
-                                reorder_validator_queue(validators);
+				// Print unused symbols from Module when finished processing all instructions
+                                if (validator->validatorType == 2)
+				{
+					moduleData.print_unused_symbols_from_module();
+				}
+				reorder_validator_queue(validators);
                                 validator = validators.front();
                                 break;
                         }
@@ -372,7 +377,8 @@ void processFileStream(const char* input_file_name)
 				tokenizerPassTwo(line,lineNumber,tokenOffset,validators2,symbolTable,moduleData2);
 			}
 		}
-		moduleData2.print_unused_symbols();
+		moduleData2.print_unused_symbols_from_program();
+		moduleData2.clear_symbols_from_use_set();
 		delete_validator_queue(validators2);
 		symbolTable.delete_symbol_table_keys();
 		input_file_stream2.close();
