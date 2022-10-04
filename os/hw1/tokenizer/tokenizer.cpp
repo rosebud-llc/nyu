@@ -4,7 +4,7 @@
 #include <string.h> // strtok
 #include <stdlib.h> // strtol, EXIT_FAILURE
 #include <iostream> // cout, endl
-#include <sstream> //
+#include <sstream>  // stringstream, str
 #include <fstream>  // getline, is_open, close
 #include <map>
 
@@ -15,8 +15,6 @@
 #include <processor_handlers/processor_handler.h>
 using namespace std;
 
-// You MUST keep ordered list of USE list symbols on second pass so that you know how which symbol to apply for an E instruction
-// you can have up to 256 symbols  so it's not always the last digit you need to check, but the last 3 of the instruction
 
 void exit_on_parse_error(unsigned int errorCode,
 		unsigned int lineNum, unsigned int lineOffset)
@@ -95,8 +93,6 @@ char* convert_string_to_cstring(string& line)
 char* nextToken(char* p_token, unsigned int& tokenOffset)
 {
 	static const char* delims = " \t\n";
-	//TODO - now handled by set_string function above sinc each char is +1 token
-	//tokenOffset++;
 	return strtok(p_token,delims);
 }
 
@@ -303,26 +299,21 @@ void tokenizerPassTwo(string& line,
         return;
 }
 
-//TODO: should this produce a symbol_table? Will be need for passTwo
 void processFileStream(const char* input_file_name)
 {
-	ifstream input_file_stream;
-	input_file_stream.open(input_file_name);
+	SymbolTable symbolTable;
 	
-	//TODO move variable needed on both file reads outside this is_open check and do the close/open outside the if block for 2nd pass
-	//if (input_file_stream.is_open())
-	//{
-		//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Start reading from file stream." << endl;
-
+	// Pass One
+	ifstream input_file_stream1;
+	input_file_stream1.open(input_file_name);
+	if (input_file_stream1.is_open())
+	{
 		string line;
-
 		unsigned int lineNumber = 0;
 		unsigned int tokenOffset = 0;
 		queue<ValidatorData*> validators = initialize_validator_queue();
-		SymbolTable symbolTable;
 		ModuleData moduleData;
-		//cout << "Attempting to get first line in file... " << endl;
-		while(getline(input_file_stream, line))
+		while(getline(input_file_stream1, line))
 		{
 			lineNumber++;
 			tokenOffset = 0;
@@ -330,10 +321,8 @@ void processFileStream(const char* input_file_name)
 			if (!validators.empty())
 			{
 				tokenize(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);
-				//cout << "exited tokenizer" << endl;
 			}
 		}
-		cout << "Check if validators empty before inspecting front validator count" << endl;
 		if (!validators.empty())
 		{
 			
@@ -353,58 +342,49 @@ void processFileStream(const char* input_file_name)
 				}
 			}
 		}
-		// TODO: On SECOND PASS, Print Symbol Table
+		// Print Symbol Table
 		symbolTable.print_symbol_table();
 
-		// Deallocate mem
+		// Delete dynamically allocated memory
 		delete_validator_queue(validators);
-		// TODO: symbolTable must be updated during definition validation. key_strcmp must be defined outside class (can't refernce class members when function is static)
-		//	NOTE: this has been moved to after Pass Two below
-		// symbolTable.delete_symbol_table_keys();
-		// Close file stream
-		input_file_stream.close();
+	}
+	// Close input file stream 1
+	input_file_stream1.close();
 		
-		// Pass Two
-		//cout << "START SECOND PASS" << endl;
+	// Pass Two
+	ifstream input_file_stream2;
+	input_file_stream2.open(input_file_name);
+	if (input_file_stream2.is_open())
+	{
 		cout << "\nMemory Map" << endl;
 
-		ifstream input_file_stream2;
-		input_file_stream2.open(input_file_name);
-		//TODO add a second input_file_stream2.is_open() check here
-		unsigned int lineNumber2 = 0;
-		queue<ValidatorData*> validators2 = initialize_validator_queue();
-		ModuleData moduleData2;
+		string line;
+		//TODO i think lineNumber and tokenOffset can be deleted for Pass Two
+		unsigned int lineNumber = 0;
+		unsigned int tokenOffset = 0;
+		queue<ValidatorData*> validators = initialize_validator_queue();
+		ModuleData moduleData;
 		while(getline(input_file_stream2, line))
 		{
-			lineNumber2++;
-			//cout << "LINE# " << lineNumber2 << ": " << line << endl;
-			if (!validators2.empty()) 
+			lineNumber++;
+			tokenOffset = 0;
+			//cout << "LINE# " << lineNumber << ": " << line << endl;
+			if (!validators.empty()) 
 			{
 				//TODO: i don't think we need lineNumber and tokenOffset for 2nd pass
-				tokenizerPassTwo(line,lineNumber,tokenOffset,validators2,symbolTable,moduleData2);
+				tokenizerPassTwo(line,lineNumber,tokenOffset,validators,symbolTable,moduleData);
 			}
 		}
-		moduleData2.print_unused_symbols_from_program();
-		moduleData2.clear_symbols_from_use_set();
-		delete_validator_queue(validators2);
+
+		// Delete dynamically allocated memory at end of program
+		moduleData.print_unused_symbols_from_program();
+		moduleData.clear_symbols_from_use_set();
+		delete_validator_queue(validators);
 		symbolTable.delete_symbol_table_keys();
 		input_file_stream2.close();
-
-
-		//TODO - delete this stuff
-		//cout << getLogPrefix(__FILE__,__func__,__LINE__) << "Finished reading from file stream." << endl;
-		/*
-		symbolTable.add_symbol_info("Hello World!",12345,true,false);
-		symbolTable.print_symbols();
-		symbolTable.add_symbol_info("You Rock!",6789,false,true);
-		symbolTable.print_symbols();
-		symbolTable.delete_symbols();
-		*/
-	//}
-	//else
-	//{
-	//	cout << getLogPrefix(__FILE__,__func__,__LINE__) << "ERROR: Unable to open file stream." << endl;
-	//}
+	}
+	// Close input file stream 2
+	input_file_stream2.close();
 }
 
 
