@@ -65,12 +65,17 @@ void set_string_start_from_matching_token(string& line, char* p_token, unsigned 
 			// TODO does this work comparing string to dereferenced c-string?
 			else if ( (isalnum(*s_itr) || ispunct(*s_itr)) && !stopCountingTabs)
 			{
-				//cout << "String isalnum/ispunct && doNotStopCountingTabs... tokenOffset(+1)" << endl;
-				tokenOffset++;
+				//cout << "String isalnum/ispunct ";
 				if (*s_itr == *p_token)
 				{
-					//cout << "String equals p_token. Stop counting" << endl;
+					//cout << "and string equals p_token... tokenOffset(+1)" << endl; // << strlen(p_token) << ")... and stop counting" << endl;
+					tokenOffset++; //+= strlen(p_token);
 					stopCountingTabs = true;
+				}
+				else
+				{
+					//cout << " and doNotStopCountingTabs... tokenOffset(+1)" << endl;
+					tokenOffset++;
 				}
 			}
 			// When done counting tabs, concatenate substring starting from token
@@ -121,13 +126,11 @@ void tokenizerPassOne(string& line,
 			// First, validate count
 			//cout << "Validate Count: " << p_token << " because validator->tokenCount == " << validator->tokenCount << endl;
 			unsigned int is_valid_count = validator_handler(p_token, validator, symbolTable, moduleData, true);
-			//cout << "BASE ADDRESS.CURR = " << validator->currBaseAddress << endl;
-			//cout << "BASE ADDRESS.NEXT = " << validator->nextBaseAddress << endl;
 			//cout << "Is Valid Count: " << is_valid_count << endl;
-			// Need to calculate tokenOffset before printing Error if count not valid.
-			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if (is_valid_count > 0)
 			{
+				// Increment tokenOffset - failed to validate count
+				tokenOffset++;
 				exit_on_parse_error(is_valid_count,lineNumber,tokenOffset);
 			}
 			// Then set count
@@ -137,33 +140,28 @@ void tokenizerPassOne(string& line,
 			{
 				reorder_validator_queue(validators);
 				validator = validators.front();
-				//cout << "QUEUE REORDERED - LINE COUNT ZERO" << endl;
 			}
 			// Next Token
-			//set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if(p_token != NULL) strcpy(validator->prevToken,p_token); // update prevToken
 			p_token = nextToken(NULL, tokenOffset);
-			//set_string_start_from_matching_token(orig_line, p_token, tokenOffset);
 			if(p_token != NULL)
 			{	 
 				strcpy(validator->currToken,p_token); // update currToken
 			}
 			else // token is NULL, exit from tokenizer() and getline on next iteration to process
 			{
-				//cout << "EXIT tokenizer because next token is NULL" << endl;
-				//cout << "tokenOffset == " << tokenOffset << endl;
+				// Increment tokenOffset to account for count which was validated
+				set_string_start_from_matching_token(orig_line,validator->prevToken,tokenOffset);
 				delete[] p_cstring;
 				return;
 			}
-			//cout << "TOKEN: " << validator->currToken << endl;
-			if(p_token == NULL) cout << "Token is null!" << endl;
 		}
 		// Only enter this while loop when you actually have something to process (i.e. count is > 0)
 		while(validator->tokenCount > 0) // NOTE YOU REMOVED P_TOKEN NULL CHECK FROM HERE ON 09/23 DUE TO input-13 TEST FAIL
 		{
 			unsigned int is_valid_syntax = validator_handler(p_token, validator, symbolTable, moduleData);
 			//cout << "Is Valid Syntax: " << is_valid_syntax << endl;
-			// Need to calculate tokenOffset before printing Errpr if syntax not valid
+			// Need to calculate tokenOffset before printing Error if syntax not valid
 			set_string_start_from_matching_token(orig_line,p_token,tokenOffset);
 			if (is_valid_syntax > 0)
 			{
@@ -178,11 +176,6 @@ void tokenizerPassOne(string& line,
 				 strcpy(validator->currToken,p_token); // update currToken
 			
 			}
-			//NOTE: the ELSE check that you do earier in the set count loop above must happen
-			// at the end of this loop after you decrement counts and reorder Queue
-			//cout << "after strcpy" << endl;
-			//cout << "TOKEN: " << validator->currToken << endl;
-
 			// Case where Definition Count set to 0 because there's nothing to process, you don't want to decrement  to negative value.. altho not posisble if this is unsigned int, but better to check and be sure
 			if (validator->tokenCount > 0)
 			{     
@@ -208,7 +201,6 @@ void tokenizerPassOne(string& line,
 		}
 	}
 	// Deallocate mem
-	//cout << "deallocate mem" << endl;
 	delete[] p_cstring;
 	return;
 }
@@ -318,10 +310,13 @@ void processFileStream(const char* input_file_name)
 		unsigned int tokenOffset = 0;
 		queue<ValidatorData*> validators = initialize_validator_queue();
 		ModuleData moduleData;
-		while(input_file_stream1.peek() != EOF) //getline(input_file_stream1, line))
+		while(getline(input_file_stream1,line))
 		{
-			getline(input_file_stream1,line);
-			if (!line.empty() && input_file_stream1.peek() != EOF)
+			if (line.empty() && input_file_stream1.peek() == EOF)
+			{
+				// No-Op
+			}
+			else
 			{
 				lineNumber++;
 				tokenOffset = 0;
@@ -342,6 +337,7 @@ void processFileStream(const char* input_file_name)
 			{
 				//cout << "Validator tokenCount is > than zero" << endl;
 				char* p_token = NULL;
+				//TODO: move token increment into tokenizerPassOne? this'll be hard to keep track of
 				tokenOffset++; // Increment because it was the 'next' token that failed to process
 				unsigned int is_valid_syntax = validator_handler(p_token,validator,symbolTable,moduleData);
 				//cout << "is_valid_syntax == " << is_valid_syntax << endl;

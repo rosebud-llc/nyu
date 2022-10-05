@@ -13,7 +13,6 @@ unsigned int processor_handler(char* p_token,
 		ModuleData& moduleData)
 {
 	unsigned int validatorType = validator->validatorType;
-	unsigned int tokenCount = validator->tokenCount;
 	unsigned int result = 0;
 
 	// Process Definition Set
