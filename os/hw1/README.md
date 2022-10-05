@@ -28,11 +28,15 @@ PassOne and PassTwo was not helpful since their requirements are functionally di
 Rather than throw out all the code, I changed the classes such that their member functions
 were static and could easily be reused for only PassOne valdiation. Hence, the word 
 'validators' is overused.
+* I work full time and only had one week to complete this project due to travel. 
+Therefore, for the sake of expediency there are some areas of the code that could
+have been optimized or named better. Below I've outlined some areas for improvement.
 
 ## Areas for Improvment
 * Replace naked pointers with unique pointers; however, this is not available until C++11
 * Remove 'validator' from _data/ and _queue/ folders - they are used on both PassOne and PassTwo and do not perform validation.
 * Refactor ModuleData by creating PassOneModuleData and PassTwoModuleData since the use cases are mutually exclusive
+* Refactor ModuleData PassTwo data storage for Def and Use lists/sets/maps - unnecessaryily complex
 * Replace cout with proper debug/info/error logging to file
 * Create unit tests
 
