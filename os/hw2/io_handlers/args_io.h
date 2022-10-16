@@ -7,6 +7,10 @@ using namespace std;
 
 
 vector<pair<const char*,const char*> > parseArgs(int argc, char* argv[]);
-const char* getInputFileName(vector<pair<const char*,const char*> > args);
+const char* getInputFileName(
+	vector<pair<const char*,const char*> > args,
+	const char* arg);
+
+vector<unsigned int> getRandomValues(const char*);
 
 #endif
