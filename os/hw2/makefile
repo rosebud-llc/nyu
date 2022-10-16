@@ -10,6 +10,7 @@ TARGET = main
 
 # List all source files
 SOURCES = \
+io_handlers/*.cpp \
 events/*.cpp \
 process/*.cpp 
 
@@ -17,11 +18,11 @@ all:$(TARGET)
 
 # TODO: remove validator_factory
 $(TARGET): main.cpp
-	$(CC) $(CFLAGS) -o $(TARGET) main.cpp $(SOURCES) -I . -I events -I process
+	$(CC) $(CFLAGS) -o $(TARGET) main.cpp $(SOURCES) -I . -I io_handlers -I events -I process
 
 
 run:
-	./main
+	./main -i lab2_assign/input0
 	
 clean:
 	$(RM) $(TARGET)
