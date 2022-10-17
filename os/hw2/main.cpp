@@ -8,6 +8,23 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
+	// Return code;
+	int rc = 0;
+	
+	// Parse args
+	Args args;
+	rc = get_args(argc,argv,args);
+	if (rc)
+	{
+		cerr << "Stopping program." << endl;
+		return rc;
+	}
+	else
+	{
+		print_args(args);
+	}
+	
+	/*
 	// Parse args
         vector<pair<const char*,const char*> > args = parseArgs(argc,argv);
 	
@@ -18,8 +35,15 @@ int main(int argc, char* argv[])
 
 	// Create events stream
 	const char* arg_i = "-i"; //input
-	const char* input_file = getInputFileName(args,arg_i);
-	Events events(input_file);	
+	const char* input_file = getInputFileName(args,arg_i);	
+	*/
+
+	// Fetch random values
+	vector<unsigned int> rands 
+		= getRandomValues(args.random_file.c_str());
+	
+	// Create events stream
+	Events events(args.input_file.c_str());	
 	
 	// Create processes from events stream
 	unsigned int next_event_timestamp = 0;

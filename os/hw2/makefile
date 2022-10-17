@@ -22,7 +22,7 @@ $(TARGET): main.cpp
 
 
 run:
-	./main -i lab2_assign/input0 -r lab2_assign/rfile
+	./main -sR10:2 lab2_assign/input0 lab2_assign/rfile
 	
 clean:
 	$(RM) $(TARGET)
