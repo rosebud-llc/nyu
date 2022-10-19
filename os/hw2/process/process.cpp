@@ -1,33 +1,11 @@
 #include <process.h>
 
 #include <iostream> // cout, endl
+#include <stdio.h>  // printf
 
-Process::PROCESS_STATE Process::get_process_state()
+unsigned int Process::get_pid()
 {
-	return _process_state;
-}
-
-// static
-string Process::get_process_state_str(const Process::PROCESS_STATE ps)
-{
-	switch(ps)
-	{
-		case CREATED:
-			return "CREATED";	
-			break;		
-		case READY:
-			return "READY";
-			break;
-		case RUNNING:
-			return "RUNNING";
-			break;
-		case BLOCKED:
-			return "BLOCKED";
-			break;
-		default:
-			cerr << "Failed to convert enum PROCESS_STATE to string. Enum unknown: " << ps << endl;
-			return "";
-	}
+	return _pid;
 }
 
 unsigned int Process::get_arrival_time()
@@ -51,9 +29,9 @@ unsigned int Process::get_io_burst()
 }
 
 
-void Process::set_process_state(const Process::PROCESS_STATE ps)
+void Process::set_pid(const unsigned int pid)
 {
-	_process_state = ps;
+	_pid = pid;
 }
 
 void Process::set_arrival_time(const unsigned int at)
@@ -76,14 +54,29 @@ void Process::set_io_burst(const unsigned int io)
 	_io_burst = io;
 }
 
-void Process::print_process()
+void Process::print_process_info()
 {
 	cout << "Process info:" << endl;
-	cout << "\t_process_state: " << Process::get_process_state_str(_process_state) << endl; 
+	cout << "\t_pid: " << _pid << endl;
 	cout << "\t_arrival_time: " << _arrival_time << endl; 
 	cout << "\t_total_cpu_time: " << _total_cpu_time << endl;
 	cout << "\t_cpu_burst: " << _cpu_burst << endl;
 	cout << "\t_io_burst: " << _io_burst << endl;
 }	
+
+void Process::print_process_summary(string& scheduler_type)
+{
+	printf("%04d: %4d %4d %4d %4d %1d | %5d %5d %5d %5d\n",
+		_pid,
+		_arrival_time,
+		_total_cpu_time,
+		_cpu_burst,
+		_io_burst,
+		0, // TODO: Static Priority (but only print if scheduler_type == PRO/PREPRIO
+		0, // TODO: Finishing Time
+		0, // TODO: Turnaround Time
+		0, // TODO: I/O Time
+		0); // TODO: CPU Waiting Time	
+}
 
 

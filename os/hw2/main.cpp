@@ -24,41 +24,37 @@ int main(int argc, char* argv[])
 		print_args(args);
 	}
 	
-	/*
-	// Parse args
-        vector<pair<const char*,const char*> > args = parseArgs(argc,argv);
-	
-	// Fetch random values
-	const char* arg_r = "-r"; //rfile
-	const char* rfile = getInputFileName(args,arg_r);
-	vector<unsigned int> rands = getRandomValues(rfile);
 
-	// Create events stream
-	const char* arg_i = "-i"; //input
-	const char* input_file = getInputFileName(args,arg_i);	
-	*/
-
-	// Fetch random values
+	// Read-in random values
 	vector<unsigned int> rands 
 		= getRandomValues(args.random_file.c_str());
 	
-	// Create events stream
+	// Create events list 
 	Events events(args.input_file.c_str());	
+
+	Event* event;
+	while (event = events.get_front_event())
+	{
+		if (Event::CREATED == event->get_event_state())
+		{
+			cout << "event is in state created" << endl;
+		}
+		events.add_completed_process(event->get_process());
+		delete event;
+		event = NULL;
+		events.pop_front_event();
+		
+	}
+	events.print_summary(args.scheduler_specification);
+
 	
 	// Create processes from events stream
+	/*
 	unsigned int next_event_timestamp = 0;
 	unsigned int time_elapsed = 0;
 	vector<unsigned int>::const_iterator rands_itr = rands.begin();
 	unsigned int random;
-	Process* process;
-	while(process = events.get_event())
-	{
-		if(process == NULL)
-		{		
-			break;
-		}
-		process->set_process_state(Process::CREATED);
-		process->print_process();
+
 		process->set_process_state(Process::READY);
 
 		if (rands_itr == rands.end())
@@ -84,9 +80,8 @@ int main(int argc, char* argv[])
 			delete process;
 			
 		}
+		*/
 	
-	}
-
 	return 0;
 }
 
