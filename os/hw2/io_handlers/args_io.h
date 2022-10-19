@@ -30,15 +30,11 @@ unsigned int parse_scheduler_specification(
 	const char* spec, 
 	Args& args);
 
+// public
 unsigned int get_args(int argc, 
 	char* argv[], 
 	Args& args);
 
-vector<pair<const char*,const char*> > parseArgs(int argc, char* argv[]);
-
-const char* getInputFileName(
-	vector<pair<const char*,const char*> > args,
-	const char* arg);
 
 vector<unsigned int> getRandomValues(const char*);
 
