@@ -12,36 +12,48 @@ class Event
 public:
         enum EVENT_STATE
         {
-                CREATED=0,
-                READY=1,
-                RUNNING=2,
-                BLOCKED=3
+                NONE=0,
+		CREATED=1,
+                READY=2,
+                RUNNING=3,
+                BLOCK=4,
+		PREEMPT=5,
         };
 
 	// Constructor
-	Event(Process* process) : 
-		_event_state(CREATED),
+	Event(Process* process) :
+		_prev_state(NONE),
+		_curr_state(CREATED),
+		_next_state(NONE),
 		_process(process), 
 		_timestamp(process->get_arrival_time())
 		{};
 
 	// setters
-	void set_event_state(const EVENT_STATE);
-        
+	void set_prev_state(const EVENT_STATE);
+	void set_curr_state(const EVENT_STATE);
+	void set_next_state(const EVENT_STATE);
+	void set_timestamp(unsigned int timestamp);       
+ 
 	// getters
-	EVENT_STATE get_event_state();
+	EVENT_STATE get_prev_state();
+	EVENT_STATE get_curr_state();
+	EVENT_STATE get_next_state();
+	static string get_event_state_str(const EVENT_STATE);
 	Process* get_process() const;
+	unsigned int get_timestamp();
 
 	// printers
 	void print_event_info();
 	void print_event_summary(string& scheduler_type);		
 
 private:
-	EVENT_STATE _event_state;
+	EVENT_STATE _prev_state;
+	EVENT_STATE _curr_state;
+	EVENT_STATE _next_state;
 	Process* _process;
 	unsigned int _timestamp;		
 	
-        string _get_event_state_str();
 };
 
 #endif

@@ -36,7 +36,7 @@ private:
 	// methods to initialzie Events
 	Process* _get_process_from_stream(const unsigned int pid);
 	void _init_events_list();
-	
+	void _init_completed_processes();	
 };
 
 #endif

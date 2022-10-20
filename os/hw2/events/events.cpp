@@ -16,6 +16,7 @@ Events::Events(const char* input_file)
 	{
 		_process_stream.open(input_file);
 		_init_events_list();
+		_init_completed_processes();
 	}
 	else
 	{
@@ -104,6 +105,15 @@ Process* Events::_get_process_from_stream(const unsigned int pid)
 		cerr << "Failed to create Proccess from event stream. Events stream is not open." << endl;
 	}
 	return process;
+}
+
+//private
+void Events::_init_completed_processes()
+{
+	if(_events_list.size() < _completed_processes.max_size())
+	{
+		_completed_processes.reserve(_events_list.size());
+	}
 }
 
 // private
