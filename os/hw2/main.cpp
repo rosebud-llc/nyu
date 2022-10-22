@@ -19,13 +19,13 @@ void print_state_transition_info(
 	{
 		if(event->get_next_state() == Event::RUNNING)
 		{
-			cout << "cb=" << process->get_cpu_burst()
+			cout << " cb=" << process->get_cpu_burst()
 				<< " rem=" << process->get_total_cpu_time();
 			//TODO: add priority print 
 		}
 		else if(event->get_next_state() == Event::BLOCK)
 		{
-			cout << "ib=" << process->get_io_burst()
+			cout << " ib=" << process->get_io_burst()
 				<< " rem=" << process->get_total_cpu_time();
 			//TODO: add priroity print
 		}
@@ -54,6 +54,8 @@ int evaluate_state_transition(
 			call_scheduler = true;
 			break;
 		case Event::READY:
+			event->set_curr_state(Event::READY);
+			event->set_next_state(Event::RUNNING);
 			print_state_transition_info(
 				event,
 				process,
@@ -65,11 +67,23 @@ int evaluate_state_transition(
 			break;
 		*/
 		case Event::RUNNING:
-			
-
+			event->set_curr_state(Event::BLOCK);
+			event->set_next_state(Event::READY);
+			print_state_transition_info(
+				event,
+				process,
+				timestamp);
+			call_scheduler = true;
 			break;
 
 		case Event::BLOCK:
+			event->set_curr_state(Event::BLOCK);
+			event->set_next_state(Event::READY);
+			print_state_transition_info(
+				event,
+				process,
+				timestamp);
+			call_scheduler = true;
 			break;
 	}
 	return rc;
