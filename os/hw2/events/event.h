@@ -23,11 +23,21 @@ public:
 	// Constructor
 	Event(Process* process) :
 		_prev_state(NONE),
-		_curr_state(CREATED),
-		_next_state(NONE),
+		_curr_state(NONE),
+		_next_state(CREATED),
 		_process(process), 
 		_timestamp(process->get_arrival_time())
 		{};
+
+	Event(Process* process,
+		EVENT_STATE curr_state,
+		EVENT_STATE next_state,
+		unsigned int timestamp) :
+			_prev_state(NONE),
+			_curr_state(curr_state),
+			_next_state(next_state),
+			_process(process),
+			_timestamp(timestamp) {};
 
 	// setters
 	void set_prev_state(const EVENT_STATE);

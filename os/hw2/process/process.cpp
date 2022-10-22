@@ -28,6 +28,10 @@ unsigned int Process::get_io_burst()
 	return _io_burst;
 }
 
+unsigned int Process::get_elapsed_time()
+{
+	return _elapsed_time;
+}
 
 void Process::set_pid(const unsigned int pid)
 {
@@ -54,6 +58,20 @@ void Process::set_io_burst(const unsigned int io)
 	_io_burst = io;
 }
 
+void Process::set_elapsed_time(const unsigned int cpu_usage_time)
+{
+	unsigned int new_elapsed_time =
+                _elapsed_time + cpu_usage_time;
+        if (new_elapsed_time > _total_cpu_time)
+        {
+                _elapsed_time = _total_cpu_time;
+        }
+	else
+	{
+		_elapsed_time = new_elapsed_time;
+	}
+}
+	
 void Process::print_process_info()
 {
 	cout << "Process info:" << endl;
@@ -62,6 +80,7 @@ void Process::print_process_info()
 	cout << "\t_total_cpu_time: " << _total_cpu_time << endl;
 	cout << "\t_cpu_burst: " << _cpu_burst << endl;
 	cout << "\t_io_burst: " << _io_burst << endl;
+	cout << "\t_elapsed_time: " << _elapsed_time << endl;
 }	
 
 void Process::print_process_summary(string& scheduler_type)

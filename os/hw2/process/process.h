@@ -19,7 +19,8 @@ public:
 			_arrival_time(at),
 			_total_cpu_time(tc),
 			_cpu_burst(cb),
-			_io_burst(io) {};
+			_io_burst(io),
+			_elapsed_time(0) {};
 
 	// getters
 	unsigned int get_pid();
@@ -27,6 +28,7 @@ public:
 	unsigned int get_total_cpu_time();
 	unsigned int get_cpu_burst();
 	unsigned int get_io_burst();	
+	unsigned int get_elapsed_time();
 	
 	// setters
 	void set_pid(const unsigned int);
@@ -34,7 +36,8 @@ public:
 	void set_total_cpu_time(const unsigned int);
 	void set_cpu_burst(const unsigned int);
 	void set_io_burst(const unsigned int);
-	
+	void set_elapsed_time(const unsigned int);	
+
 	// printers	
 	void print_process_info();
 	void print_process_summary(string& scheduler_type);
@@ -45,7 +48,7 @@ private:
 	unsigned int _total_cpu_time; // Total duration of CPU time this process requires
 	unsigned int _cpu_burst; // Upper limit of compute demand
 	unsigned int _io_burst; // Upper limit of io time
-
+	unsigned int _elapsed_time; // Amount of time process has used CPU
 };
 
 #endif

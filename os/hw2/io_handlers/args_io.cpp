@@ -9,7 +9,7 @@
 #include <stdlib.h> // strtoul
 #include <unistd.h>
 
-
+/*
 vector<unsigned int> getRandomValues(const char* random_file)
 {
 	vector<unsigned int> rands;
@@ -45,6 +45,7 @@ vector<unsigned int> getRandomValues(const char* random_file)
 	cout << "Total random values added to vector: " << rands.size() << endl;
 	return rands;
 }
+*/
 
 void init_args(Args& args)
 {

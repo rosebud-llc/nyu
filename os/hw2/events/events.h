@@ -20,7 +20,12 @@ public:
 	// setters
 	void pop_front_event();
 	void add_completed_process(Process*);
-	
+	void add_event(Process*,
+		unsigned int cpu_usage_time, // i.e. the random value. //TODO is this where we should updated elapsed time? or only when process is in RUNNING state?
+		unsigned int timestamp, // i.e. the event timestamp
+		Event::EVENT_STATE curr_state,
+		Event::EVENT_STATE next_state);
+		
 	// getters
 	Event* get_front_event();
 

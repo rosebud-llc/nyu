@@ -36,6 +36,5 @@ unsigned int get_args(int argc,
 	Args& args);
 
 
-vector<unsigned int> getRandomValues(const char*);
 
 #endif

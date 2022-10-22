@@ -183,4 +183,28 @@ void Events::print_summary(string& scheduler_type)
 		0.0); //TODO: Throughput of number of processes per 100 time units
 }
 
+void Events::add_event(Process* process,
+            unsigned int cpu_usage_time, // i.e. the random value. //TODO is this where we should updated elapsed time? or only when process is in RUNNING state?
+            unsigned int timestamp, // i.e. the event timestamp
+            Event::EVENT_STATE curr_state,
+            Event::EVENT_STATE next_state)
+{
+	// First, set process's elapsed time
+	// TODO should this happen only when transition to RUNNING... not every event
+	process->set_elapsed_time(cpu_usage_time);
+	cout << "Elapsed time: " << process->get_elapsed_time() << endl;
+	// Second, if process completed, mark it done, otherwise, create next Event
+	unsigned int new_timestamp = timestamp + cpu_usage_time; // it's not always cpu_usage_time, it could be io time for blocking
+	if (process->get_elapsed_time() >= process->get_total_cpu_time())
+	{
+		_completed_processes.push_back(process);
+	}
+	else
+	{
+		Event* event = new Event(process, curr_state, next_state, new_timestamp);
+		_events_list.push_front(event);
+		//^this needs to be a private function that properly sorts newly added events
+	}
+}
+
 
