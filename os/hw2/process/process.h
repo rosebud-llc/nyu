@@ -14,12 +14,15 @@ public:
 		unsigned int at,
 		unsigned int tc,
 		unsigned int cb,
-		unsigned int io) :
+		unsigned int io,
+		unsigned int sp) :
 			_pid(pid), 
 			_arrival_time(at),
 			_total_cpu_time(tc),
 			_cpu_burst(cb),
 			_io_burst(io),
+			_static_priority(sp),
+			_dynamic_priority(sp-1), //TODO check if this is a good thing to do for all schedulers
 			_elapsed_time(0) {};
 
 	// getters
@@ -27,7 +30,9 @@ public:
 	unsigned int get_arrival_time();
 	unsigned int get_total_cpu_time();
 	unsigned int get_cpu_burst();
-	unsigned int get_io_burst();	
+	unsigned int get_io_burst();
+	unsigned int get_static_priority();	
+	unsigned int get_dynamic_priority();
 	unsigned int get_elapsed_time();
 	
 	// setters
@@ -36,6 +41,8 @@ public:
 	void set_total_cpu_time(const unsigned int);
 	void set_cpu_burst(const unsigned int);
 	void set_io_burst(const unsigned int);
+	void set_static_priority(const unsigned int);
+	void set_dynamic_priority(const unsigned int);
 	void set_elapsed_time(const unsigned int);	
 
 	// printers	
@@ -48,6 +55,8 @@ private:
 	unsigned int _total_cpu_time; // Total duration of CPU time this process requires
 	unsigned int _cpu_burst; // Upper limit of compute demand
 	unsigned int _io_burst; // Upper limit of io time
+	unsigned int _static_priority; // Set using Rands(rfile) - only has impact on PRIO/PREPRIO schedulers
+	unsigned int _dynamic_priority; // Priorty defined as value in range of [0...(_static_priority-1)]
 	unsigned int _elapsed_time; // Amount of time process has used CPU
 };
 

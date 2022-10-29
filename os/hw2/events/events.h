@@ -2,6 +2,7 @@
 #define INCLUDED_EVENTS_HEADER
 
 #include <events/event.h>
+#include <rands/rands.h>
 
 #include <utility>  // pair
 #include <fstream>  // is_open, close
@@ -14,7 +15,9 @@ class Events
 {
 
 public:
-	Events(const char* input_file); 
+	Events(const char* input_file,
+		const unsigned int maxprio,
+		Rands& rands); 
 	~Events();	
 
 	// setters
@@ -39,8 +42,13 @@ private:
 	vector<Process*> _completed_processes;
 	
 	// methods to initialzie Events
-	Process* _get_process_from_stream(const unsigned int pid);
-	void _init_events_list();
+	Process* _get_process_from_stream(
+		const unsigned int pid,
+		const unsigned int maxprio,
+		Rands& rands);
+	void _init_events_list(
+		const unsigned int maxprio,
+		Rands& rands);
 	void _init_completed_processes();	
 };
 

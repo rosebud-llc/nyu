@@ -9,13 +9,16 @@
 #include <iomanip> // setfill, setw
 
 // Constructor
-Events::Events(const char* input_file) 
+Events::Events(
+	const char* input_file,
+	const unsigned int maxprio,
+	Rands& rands) 
 {
 	if (input_file != NULL
 		&& strlen(input_file) > 0)
 	{
 		_process_stream.open(input_file);
-		_init_events_list();
+		_init_events_list(maxprio, rands);
 		_init_completed_processes();
 	}
 	else
@@ -47,7 +50,10 @@ Events::~Events()
  * &return: pointer to Process, NULL on error
  */
 // private
-Process* Events::_get_process_from_stream(const unsigned int pid)
+Process* Events::_get_process_from_stream(
+	const unsigned int pid,
+	const unsigned int maxprio,
+	Rands& rands)
 {
 	Process* process = NULL;
 
@@ -93,7 +99,8 @@ Process* Events::_get_process_from_stream(const unsigned int pid)
 					tokens[0],  // Arrival Time							
 					tokens[1],  // Total CPU Time
 					tokens[2],  // CPU Burst
-					tokens[3]); // IO Burst
+					tokens[3],  // IO Burst
+					rands.get_next_random_value(maxprio)); // static_priority
 		}
 		else
 		{
@@ -117,11 +124,13 @@ void Events::_init_completed_processes()
 }
 
 // private
-void Events::_init_events_list()
+void Events::_init_events_list(
+	const unsigned int maxprio,
+	Rands& rands)
 {
 	unsigned int pid = -1; // pre-increment in while lopp ensures 0-based pid
 	Process* process;
-        while(process = _get_process_from_stream(++pid))
+        while(process = _get_process_from_stream(++pid, maxprio, rands))
         {
                 if(process == NULL)
                 {               

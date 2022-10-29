@@ -28,6 +28,16 @@ unsigned int Process::get_io_burst()
 	return _io_burst;
 }
 
+unsigned int Process::get_static_priority()
+{
+	return _static_priority;
+}
+
+unsigned int Process::get_dynamic_priority()
+{
+	return _dynamic_priority;
+}
+
 unsigned int Process::get_elapsed_time()
 {
 	return _elapsed_time;
@@ -58,6 +68,16 @@ void Process::set_io_burst(const unsigned int io)
 	_io_burst = io;
 }
 
+void Process::set_static_priority(const unsigned int sp)
+{
+	_static_priority = sp;
+}
+
+void Process::set_dynamic_priority(const unsigned int dp)
+{
+	_dynamic_priority = dp;
+}
+
 void Process::set_elapsed_time(const unsigned int cpu_usage_time)
 {
 	unsigned int new_elapsed_time =
@@ -80,6 +100,8 @@ void Process::print_process_info()
 	cout << "\t_total_cpu_time: " << _total_cpu_time << endl;
 	cout << "\t_cpu_burst: " << _cpu_burst << endl;
 	cout << "\t_io_burst: " << _io_burst << endl;
+	cout << "\t_static_priority: " << _static_priority << endl;
+	cout << "\t_dynamic_priority: " << _dynamic_priority << endl;
 	cout << "\t_elapsed_time: " << _elapsed_time << endl;
 }	
 

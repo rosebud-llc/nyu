@@ -8,58 +8,39 @@ using namespace std;
 
 void print_state_transition_info(
 	Process* const process,
-	Rands& rands,
-	unsigned int& timestamp, //timestamp is updated if current event state is RUNNING or BLOCK
+	const unsigned int timestamp, 
 	Event::EVENT_STATE curr_state,
-	Event::EVENT_STATE next_state) 
+	Event::EVENT_STATE next_state, 
+	const unsigned int burst=0)
 {
 	cout << timestamp << " " << process->get_pid() << " " << process->get_elapsed_time()
 		<< ": " 
 		<< Event::get_event_state_str(curr_state)
 		<< " -> "
 		<< Event::get_event_state_str(next_state); 
-		
-	switch(curr_state)
-	{
-		case Event::RUNNING:
-			{
-			unsigned int cpu_burst =
-				rands.get_next_random_value(
-					process->get_cpu_burst());
-			process->set_elapsed_time(cpu_burst);
-			timestamp += cpu_burst;
-			
-			cout << " cb=" << cpu_burst
-				<< " rem=" << 
-					(process->get_total_cpu_time()
-					- process->get_elapsed_time());
-			//TODO: add priority print
-			} 
-			break;
-		case Event::BLOCK:
-			{
-			unsigned int io_burst =
-				rands.get_next_random_value(
-					process->get_io_burst());
-			timestamp += io_burst;
 
-			cout << " ib=" << io_burst
-				<< " rem=" << 
-					(process->get_total_cpu_time()
-					- process->get_elapsed_time());
-			//TODO: add priroity print
-			}
-			break;
-		default:
-			// do not update timestamp
-			// do not print info
-			;
+	if (next_state == Event::RUNNING || next_state == Event::BLOCK)
+	{
+		if (next_state == Event::RUNNING)
+		{
+			cout << " cb=";
+		}
+		else if (next_state == Event::BLOCK)
+		{
+			cout << " ib=";
+		}
+		cout << burst	 
+			<< " rem=" << 
+				(process->get_total_cpu_time()
+				- process->get_elapsed_time())
+			<< " prio=" << process->get_dynamic_priority();
 	}
-	cout << "\n";
+	cout << "\n";	
 }	
 
 
 void print_add_event_info(
+	Args& args,
 	Events& events,
 	Rands& rands,
 	Process* const process,
@@ -73,24 +54,31 @@ void print_add_event_info(
 	}
 	else
 	{
-		cout << "AddEvent("
-			<< timestamp
-			<< ":" << process->get_pid()
-			<< ":" << Event::get_event_state_str(next_state)
-			<< "):";
-                cout << " ";
-                events.print_events();
-                cout << "==> "; 
+		if (args.trace_event_queue)
+		{
+			cout << "AddEvent("
+				<< timestamp
+				<< ":" << process->get_pid()
+				<< ":" << Event::get_event_state_str(next_state)
+				<< "):";
+        	        cout << " ";
+			events.print_events();
+			cout << "==> "; 
+		}
 		events.add_event(process,
                         timestamp,
                         curr_state,
                         next_state);
-                events.print_events(); 
-		cout << "\n";
+                if (args.trace_event_queue)
+		{
+			events.print_events(); 
+			cout << "\n";
+		}
 	}
 }
 
 int evaluate_state_transition(
+	Args& args,
 	Events& events,
 	Rands& rands,
 	Process* process,
@@ -101,16 +89,19 @@ int evaluate_state_transition(
 	bool& call_scheduler)
 {
 	int rc = 0;
+	unsigned int burst = 0;
 	switch(next_state)
 	{
 		case Event::READY:
-			print_state_transition_info(
-				process,
-				rands,
-				timestamp,
-				curr_state,
-				next_state);
-                        curr_state = Event::READY;
+			if (args.trace_state_transition)
+			{
+				print_state_transition_info(
+					process,
+					timestamp,
+					curr_state,
+					next_state);
+                        }
+			curr_state = Event::READY;
                         next_state = Event::RUNNING;
 			run_queue.push_front(process);
 			call_scheduler = true;
@@ -120,16 +111,25 @@ int evaluate_state_transition(
 			break;
 		*/
 		case Event::RUNNING:
-			print_state_transition_info(
-				process,
-				rands,
-				timestamp,
-				curr_state,
-				next_state);
+			burst = rands.get_next_random_value(
+					process->get_cpu_burst());
+			if(args.trace_state_transition)
+			{	
+				print_state_transition_info(
+					process,
+					timestamp,
+					curr_state,
+					next_state,
+					burst);
+			}
+			//TODO - we know this is incorrect place to set_elapsed_time. it should happen in BLOCK
+			process->set_elapsed_time(burst);
                         curr_state = Event::RUNNING;
                         next_state = Event::BLOCK;
+			timestamp += burst;
 			print_add_event_info(
-                        	events,
+                        	args,
+				events,
                         	rands,
                         	process,
                         	timestamp,
@@ -139,14 +139,35 @@ int evaluate_state_transition(
 			break;
 
 		case Event::BLOCK:
-			print_state_transition_info(
-				process,
-				rands,
-				timestamp,
-				curr_state,
-				next_state);
+			//TODO assuming you can only get to BLOCK when previous/curr state is RUNNING
+			// this means the process ran for some duration of cpu_burst (remember it could have been pre-empted)
+			// so it is here where we should process->set_elapsed_time() using currennt timestamp relative to previous
+			// timestamp
+			// TODO: set_elapsed_time may not always be full burst on preempt - maybe it's okay here, but in PREEMPT need to handle
+			//process->set_elapsed_time(timestamp - prev_timestamp);	
+
+			burst = rands.get_next_random_value(
+					process->get_io_burst());
+			if (args.trace_state_transition)
+			{
+				print_state_transition_info(
+					process,
+					timestamp,
+					curr_state,
+					next_state,
+					burst);
+			}
 			curr_state = Event::BLOCK;
                         next_state = Event::READY;
+                        timestamp += burst;
+			print_add_event_info(
+                                args,
+				events,
+                                rands,
+                                process,
+                                timestamp,
+                                curr_state,
+                                next_state);			
 			call_scheduler = true;
 			break;
 		default:
@@ -172,7 +193,9 @@ void print_scheduler_info(Process* const process,
 }
 
 
-int scheduler_handler(list<Process*>& run_queue, 
+int scheduler_handler(
+	Args& args,
+	list<Process*>& run_queue, 
 	Events& events,
 	Rands& rands,
 	unsigned int timestamp,
@@ -182,17 +205,21 @@ int scheduler_handler(list<Process*>& run_queue,
 	int rc = 0;
 	// should scheduler return next process from run_queue or will run queue already be properly sorted/prioritized?
 	Process* const process = run_queue.front();
-	print_scheduler_info(process, run_queue.size());
+	if (args.trace_event_execution)
+	{
+		print_scheduler_info(process, run_queue.size());
+	}
 	if (process != NULL)
 	{
 		print_add_event_info(
+			args,
 			events,
 			rands,
 			process,
 			timestamp,
 			curr_state,
 			next_state);
-		run_queue.pop_front(); //Removing the process from the run queue
+		run_queue.pop_front(); //TODO - should this happenn before above print? Removing the process from the run queue
 	}
 	// else, process is NULL and there's no event to schedule
 	return rc;
@@ -221,7 +248,10 @@ int main(int argc, char* argv[])
 	Rands rands(args.random_file.c_str());
 	
 	// Create events list 
-	Events events(args.input_file.c_str());	
+	Events events(
+		args.input_file.c_str(),
+		args.maxprio,
+		rands);	
 
 	Event* event;
 	Process* process;
@@ -244,7 +274,9 @@ int main(int argc, char* argv[])
 		//time_in_previous_state = current_timestamp - process->get_timestamp();
 		
 		// Switch Case State Transition
-		evaluate_state_transition(events,
+		evaluate_state_transition(
+			args,
+			events,
 			rands,
 			process, 
 			run_queue, 
@@ -261,7 +293,9 @@ int main(int argc, char* argv[])
 			//if (get_next_event_time() == current_timestamp)
 				//continue;
 			call_scheduler = false;
-			scheduler_handler(run_queue,
+			scheduler_handler(
+				args,
+				run_queue,
 				events,
 				rands,
 				current_timestamp,
