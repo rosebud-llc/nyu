@@ -23,8 +23,8 @@ public:
 	// Constructor
 	Event(Process* process) :
 		_prev_state(NONE),
-		_curr_state(NONE),
-		_next_state(CREATED),
+		_curr_state(CREATED),
+		_next_state(READY),
 		_process(process), 
 		_timestamp(process->get_arrival_time())
 		{};

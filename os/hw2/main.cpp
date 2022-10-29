@@ -7,59 +7,112 @@ using namespace std;
 
 
 void print_state_transition_info(
-	Event* const event,
 	Process* const process,
-	unsigned int timestamp) 
+	Rands& rands,
+	unsigned int& timestamp, //timestamp is updated if current event state is RUNNING or BLOCK
+	Event::EVENT_STATE curr_state,
+	Event::EVENT_STATE next_state) 
 {
 	cout << timestamp << " " << process->get_pid() << " " << process->get_elapsed_time()
-		<< ": " << event->get_event_state_str(event->get_curr_state())
+		<< ": " 
+		<< Event::get_event_state_str(curr_state)
 		<< " -> "
-		<< event->get_event_state_str(event->get_next_state());
-	if (event->get_curr_state() != Event::CREATED)
+		<< Event::get_event_state_str(next_state); 
+		
+	switch(curr_state)
 	{
-		if(event->get_next_state() == Event::RUNNING)
-		{
-			cout << " cb=" << process->get_cpu_burst()
-				<< " rem=" << process->get_total_cpu_time();
-			//TODO: add priority print 
-		}
-		else if(event->get_next_state() == Event::BLOCK)
-		{
-			cout << " ib=" << process->get_io_burst()
-				<< " rem=" << process->get_total_cpu_time();
+		case Event::RUNNING:
+			{
+			unsigned int cpu_burst =
+				rands.get_next_random_value(
+					process->get_cpu_burst());
+			process->set_elapsed_time(cpu_burst);
+			timestamp += cpu_burst;
+			
+			cout << " cb=" << cpu_burst
+				<< " rem=" << 
+					(process->get_total_cpu_time()
+					- process->get_elapsed_time());
+			//TODO: add priority print
+			} 
+			break;
+		case Event::BLOCK:
+			{
+			unsigned int io_burst =
+				rands.get_next_random_value(
+					process->get_io_burst());
+			timestamp += io_burst;
+
+			cout << " ib=" << io_burst
+				<< " rem=" << 
+					(process->get_total_cpu_time()
+					- process->get_elapsed_time());
 			//TODO: add priroity print
-		}
+			}
+			break;
+		default:
+			// do not update timestamp
+			// do not print info
+			;
 	}
 	cout << "\n";
 }	
 
+
+void print_add_event_info(
+	Events& events,
+	Rands& rands,
+	Process* const process,
+	unsigned int timestamp,
+	Event::EVENT_STATE curr_state,
+	Event::EVENT_STATE next_state)
+{
+	if (process == NULL)
+	{
+		cerr << "ERROR: Process is NULL. Unable to print_add_event_info()." << endl;
+	}
+	else
+	{
+		cout << "AddEvent("
+			<< timestamp
+			<< ":" << process->get_pid()
+			<< ":" << Event::get_event_state_str(next_state)
+			<< "):";
+                cout << " ";
+                events.print_events();
+                cout << "==> "; 
+		events.add_event(process,
+                        timestamp,
+                        curr_state,
+                        next_state);
+                events.print_events(); 
+		cout << "\n";
+	}
+}
+
 int evaluate_state_transition(
-	Event* event,
+	Events& events,
+	Rands& rands,
 	Process* process,
 	list<Process*>& run_queue,
-	unsigned int timestamp,
+	unsigned int& timestamp, //gets updated when next state is RUNNING or BLOCK
+	Event::EVENT_STATE& curr_state,
+	Event::EVENT_STATE& next_state,
 	bool& call_scheduler)
 {
 	int rc = 0;
-	switch(event->get_next_state())
+	switch(next_state)
 	{
-		case Event::CREATED:
-			event->set_curr_state(Event::CREATED);
-			event->set_next_state(Event::READY);
-			print_state_transition_info(
-				event,
-				process,
-				timestamp);
-			run_queue.push_front(process);
-			call_scheduler = true;
-			break;
 		case Event::READY:
-			event->set_curr_state(Event::READY);
-			event->set_next_state(Event::RUNNING);
 			print_state_transition_info(
-				event,
 				process,
-				timestamp);
+				rands,
+				timestamp,
+				curr_state,
+				next_state);
+                        curr_state = Event::READY;
+                        next_state = Event::RUNNING;
+			run_queue.push_front(process);
 			call_scheduler = true;
 			break;		
 
@@ -67,24 +120,37 @@ int evaluate_state_transition(
 			break;
 		*/
 		case Event::RUNNING:
-			event->set_curr_state(Event::BLOCK);
-			event->set_next_state(Event::READY);
 			print_state_transition_info(
-				event,
 				process,
-				timestamp);
-			call_scheduler = true;
+				rands,
+				timestamp,
+				curr_state,
+				next_state);
+                        curr_state = Event::RUNNING;
+                        next_state = Event::BLOCK;
+			print_add_event_info(
+                        	events,
+                        	rands,
+                        	process,
+                        	timestamp,
+                        	curr_state,
+                        	next_state);
+			//call_scheduler = true;
 			break;
 
 		case Event::BLOCK:
-			event->set_curr_state(Event::BLOCK);
-			event->set_next_state(Event::READY);
 			print_state_transition_info(
-				event,
 				process,
-				timestamp);
+				rands,
+				timestamp,
+				curr_state,
+				next_state);
+			curr_state = Event::BLOCK;
+                        next_state = Event::READY;
 			call_scheduler = true;
 			break;
+		default:
+			cerr << "ERROR: Evaluating a transition state that should not be evaluated" << endl;
 	}
 	return rc;
 }
@@ -105,28 +171,6 @@ void print_scheduler_info(Process* const process,
 	}
 }
 
-void print_add_event_info(Process* const process,
-	Event::EVENT_STATE next_state,
-	Events& events)
-{
-	if (process == NULL)
-	{
-		cerr << "ERROR: Process is NULL. Unable to print_add_event_info()." << endl;
-	}
-	else
-	{
-		cout << "AddEvent("
-			<< process->get_arrival_time() //TODO should this be current_timestamp??
-			<< ":" << process->get_pid()
-			<< ":" << next_state;
-			// call Events function that loops over list and prints each event's info
-			// call Events function that creates new event for process
-			// update process? in which case you must make it non-const
-			// call Events function that loops over list again to print each event's info
-		cout << "\n";
-	}
-}
-
 
 int scheduler_handler(list<Process*>& run_queue, 
 	Events& events,
@@ -141,13 +185,14 @@ int scheduler_handler(list<Process*>& run_queue,
 	print_scheduler_info(process, run_queue.size());
 	if (process != NULL)
 	{
-		print_add_event_info(process,next_state,events);
-		
-		events.add_event(process,
-			rands.get_next_random_value(process->get_cpu_burst()),
+		print_add_event_info(
+			events,
+			rands,
+			process,
 			timestamp,
 			curr_state,
 			next_state);
+		run_queue.pop_front(); //Removing the process from the run queue
 	}
 	// else, process is NULL and there's no event to schedule
 	return rc;
@@ -191,15 +236,22 @@ int main(int argc, char* argv[])
 	{
 		process = event->get_process();
 		current_timestamp = event->get_timestamp();
-		//time_in_previous_state = current_timestamp - process->get_timestamp();
-		
-		// Switch Case State Transition
-		evaluate_state_transition(event, process, run_queue, current_timestamp, call_scheduler);
 		curr_state = event->get_curr_state();
 		next_state = event->get_next_state();
 		delete event;
 		event = NULL;
 		events.pop_front_event();
+		//time_in_previous_state = current_timestamp - process->get_timestamp();
+		
+		// Switch Case State Transition
+		evaluate_state_transition(events,
+			rands,
+			process, 
+			run_queue, 
+			current_timestamp,
+			curr_state,
+			next_state, 
+			call_scheduler);
 		
 		//cout << "Random value: " <<  rands.get_next_random_value(process->get_cpu_burst()) << endl;		
 

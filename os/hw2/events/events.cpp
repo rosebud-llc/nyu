@@ -164,6 +164,19 @@ void Events::add_completed_process(Process* process)
 	_completed_processes.push_back(process);
 }
 
+void Events::print_events()
+{
+	list<Event*>::const_iterator it = _events_list.begin();
+	for(; it != _events_list.end(); ++it)
+	{
+		cout << (*it)->get_timestamp()
+			<< ":" << (*it)->get_process()->get_pid()
+			<< ":" << (*it)->get_event_state_str(
+				(*it)->get_next_state())
+			<< " ";
+	}
+}
+
 void Events::print_summary(string& scheduler_type)
 {
 	//TODO create char->string (i.e. F->FCFS) handler in args and save to args so you can pass as string parameter here 
@@ -184,26 +197,20 @@ void Events::print_summary(string& scheduler_type)
 }
 
 void Events::add_event(Process* process,
-            unsigned int cpu_usage_time, // i.e. the random value. //TODO is this where we should updated elapsed time? or only when process is in RUNNING state?
             unsigned int timestamp, // i.e. the event timestamp
             Event::EVENT_STATE curr_state,
             Event::EVENT_STATE next_state)
 {
-	// First, set process's elapsed time
-	// TODO should this happen only when transition to RUNNING... not every event
-	process->set_elapsed_time(cpu_usage_time);
-	cout << "Elapsed time: " << process->get_elapsed_time() << endl;
-	// Second, if process completed, mark it done, otherwise, create next Event
-	unsigned int new_timestamp = timestamp + cpu_usage_time; // it's not always cpu_usage_time, it could be io time for blocking
+	// If process completed, mark it done, otherwise, create next Event
 	if (process->get_elapsed_time() >= process->get_total_cpu_time())
 	{
 		_completed_processes.push_back(process);
 	}
 	else
 	{
-		Event* event = new Event(process, curr_state, next_state, new_timestamp);
+		Event* event = new Event(process, curr_state, next_state, timestamp);
 		_events_list.push_front(event);
-		//^this needs to be a private function that properly sorts newly added events
+		//TODO ^this needs to be a private function that properly sorts newly added events
 	}
 }
 
