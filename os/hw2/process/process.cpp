@@ -38,9 +38,19 @@ unsigned int Process::get_dynamic_priority()
 	return _dynamic_priority;
 }
 
+unsigned int Process::get_state_transition_timestamp()
+{
+	return _state_transition_timestamp;
+}
+
 unsigned int Process::get_elapsed_time()
 {
 	return _elapsed_time;
+}
+
+bool Process::is_done()
+{
+	return (_elapsed_time >= _total_cpu_time);
 }
 
 void Process::set_pid(const unsigned int pid)
@@ -78,6 +88,11 @@ void Process::set_dynamic_priority(const unsigned int dp)
 	_dynamic_priority = dp;
 }
 
+void Process::set_state_transition_timestamp(const unsigned int stt)
+{
+	_state_transition_timestamp = stt;
+}
+
 void Process::set_elapsed_time(const unsigned int cpu_usage_time)
 {
 	unsigned int new_elapsed_time =
@@ -102,6 +117,7 @@ void Process::print_process_info()
 	cout << "\t_io_burst: " << _io_burst << endl;
 	cout << "\t_static_priority: " << _static_priority << endl;
 	cout << "\t_dynamic_priority: " << _dynamic_priority << endl;
+	cout << "\t_state_transition_timestamp: " << _state_transition_timestamp << endl;
 	cout << "\t_elapsed_time: " << _elapsed_time << endl;
 }	
 

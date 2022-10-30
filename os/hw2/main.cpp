@@ -13,7 +13,7 @@ void print_state_transition_info(
 	Event::EVENT_STATE next_state, 
 	const unsigned int burst=0)
 {
-	cout << timestamp << " " << process->get_pid() << " " << process->get_elapsed_time()
+	cout << timestamp << " " << process->get_pid() << " " << burst
 		<< ": " 
 		<< Event::get_event_state_str(curr_state)
 		<< " -> "
@@ -84,6 +84,7 @@ int evaluate_state_transition(
 	Process* process,
 	list<Process*>& run_queue,
 	unsigned int& timestamp, //gets updated when next state is RUNNING or BLOCK
+	const unsigned int elapsed_time, //current_timestamp - process.state_transition_timestamp
 	Event::EVENT_STATE& curr_state,
 	Event::EVENT_STATE& next_state,
 	bool& call_scheduler)
@@ -103,6 +104,7 @@ int evaluate_state_transition(
                         }
 			curr_state = Event::READY;
                         next_state = Event::RUNNING;
+			process->set_state_transition_timestamp(timestamp);
 			run_queue.push_front(process);
 			call_scheduler = true;
 			break;		
@@ -111,8 +113,10 @@ int evaluate_state_transition(
 			break;
 		*/
 		case Event::RUNNING:
+			//TODO burst should be max(burst,remaining cpu time actually needed for process)
 			burst = rands.get_next_random_value(
 					process->get_cpu_burst());
+			//TODO add DONE handler logic here
 			if(args.trace_state_transition)
 			{	
 				print_state_transition_info(
@@ -122,19 +126,12 @@ int evaluate_state_transition(
 					next_state,
 					burst);
 			}
-			//TODO - we know this is incorrect place to set_elapsed_time. it should happen in BLOCK
-			process->set_elapsed_time(burst);
-                        curr_state = Event::RUNNING;
-                        next_state = Event::BLOCK;
+			curr_state = Event::RUNNING;
+			//TODO you can set next event to block, and we can let scheduler handle removal of process and not actually create a new event
+			next_state = Event::BLOCK;
+			process->set_state_transition_timestamp(timestamp);
 			timestamp += burst;
-			print_add_event_info(
-                        	args,
-				events,
-                        	rands,
-                        	process,
-                        	timestamp,
-                        	curr_state,
-                        	next_state);
+			print_add_event_info(args,events,rands,process,timestamp,curr_state,next_state);
 			//call_scheduler = true;
 			break;
 
@@ -144,8 +141,8 @@ int evaluate_state_transition(
 			// so it is here where we should process->set_elapsed_time() using currennt timestamp relative to previous
 			// timestamp
 			// TODO: set_elapsed_time may not always be full burst on preempt - maybe it's okay here, but in PREEMPT need to handle
-			//process->set_elapsed_time(timestamp - prev_timestamp);	
-
+			process->set_elapsed_time(elapsed_time);	
+			
 			burst = rands.get_next_random_value(
 					process->get_io_burst());
 			if (args.trace_state_transition)
@@ -158,16 +155,10 @@ int evaluate_state_transition(
 					burst);
 			}
 			curr_state = Event::BLOCK;
-                        next_state = Event::READY;
-                        timestamp += burst;
-			print_add_event_info(
-                                args,
-				events,
-                                rands,
-                                process,
-                                timestamp,
-                                curr_state,
-                                next_state);			
+			next_state = Event::READY;
+			process->set_state_transition_timestamp(timestamp);
+			timestamp += burst;
+			print_add_event_info(args,events,rands,process,timestamp,curr_state,next_state);
 			call_scheduler = true;
 			break;
 		default:
@@ -177,16 +168,16 @@ int evaluate_state_transition(
 }
 
 
-void print_scheduler_info(Process* const process,
-	unsigned int run_queue_size)
+void print_scheduler_info(list<Process*> run_queue)
 {
-	if (process == NULL)
+	if (run_queue.empty())
 	{
-		cout << "SCHED (" << run_queue_size << ")" << endl;	
+		cout << "SCHED (" << run_queue.size() << ")" << endl;	
 	}
 	else
 	{
-		cout << "SCHED (" << run_queue_size 
+		Process* const process = run_queue.front();
+		cout << "SCHED (" << run_queue.size() 
 			<< ") " << process->get_pid() 
 			<< ":" << process->get_arrival_time() << endl; //TODO: should this be current_timestamp??
 	}
@@ -203,14 +194,14 @@ int scheduler_handler(
 	Event::EVENT_STATE next_state)
 {
 	int rc = 0;
-	// should scheduler return next process from run_queue or will run queue already be properly sorted/prioritized?
-	Process* const process = run_queue.front();
+	//TODO should scheduler return next process from run_queue or will run queue already be properly sorted/prioritized?
 	if (args.trace_event_execution)
 	{
-		print_scheduler_info(process, run_queue.size());
+		print_scheduler_info(run_queue);
 	}
-	if (process != NULL)
+	if (!run_queue.empty())
 	{
+		Process* const process = run_queue.front();
 		print_add_event_info(
 			args,
 			events,
@@ -258,6 +249,7 @@ int main(int argc, char* argv[])
 	list<Process*> run_queue; //TODO: move to a separate class for run queue
 	bool call_scheduler = false;
 	unsigned int current_timestamp;
+	unsigned int elapsed_time;
 	Event::EVENT_STATE prev_state;
 	Event::EVENT_STATE curr_state;
 	Event::EVENT_STATE next_state;
@@ -266,6 +258,7 @@ int main(int argc, char* argv[])
 	{
 		process = event->get_process();
 		current_timestamp = event->get_timestamp();
+		elapsed_time = current_timestamp - process->get_state_transition_timestamp();
 		curr_state = event->get_curr_state();
 		next_state = event->get_next_state();
 		delete event;
@@ -281,6 +274,7 @@ int main(int argc, char* argv[])
 			process, 
 			run_queue, 
 			current_timestamp,
+			elapsed_time,
 			curr_state,
 			next_state, 
 			call_scheduler);
