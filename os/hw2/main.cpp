@@ -11,29 +11,40 @@ void print_state_transition_info(
 	const unsigned int timestamp, 
 	Event::EVENT_STATE curr_state,
 	Event::EVENT_STATE next_state, 
-	const unsigned int burst=0)
+	const unsigned int burst=0,
+	const unsigned int howlong=0)
 {
-	cout << timestamp << " " << process->get_pid() << " " << burst
-		<< ": " 
-		<< Event::get_event_state_str(curr_state)
-		<< " -> "
-		<< Event::get_event_state_str(next_state); 
-
-	if (next_state == Event::RUNNING || next_state == Event::BLOCK)
+	cout << timestamp << " " << process->get_pid() << " " << howlong << ":"; 
+	
+	if (process->is_done())
 	{
-		if (next_state == Event::RUNNING)
-		{
-			cout << " cb=";
-		}
-		else if (next_state == Event::BLOCK)
-		{
-			cout << " ib=";
-		}
-		cout << burst	 
-			<< " rem=" << 
-				(process->get_total_cpu_time()
-				- process->get_elapsed_time())
-			<< " prio=" << process->get_dynamic_priority();
+		cout << " Done" << endl;
+		return;
+	}
+	
+	cout << " " 
+	     << Event::get_event_state_str(curr_state)
+	     << " -> "
+	     << Event::get_event_state_str(next_state); 
+
+	if (next_state == Event::RUNNING) 
+	{
+		cout << " cb=" 
+		     << burst	 
+		     << " rem=" 
+		     << (process->get_total_cpu_time()
+			- process->get_elapsed_time())
+		     << " prio=" 
+		     << process->get_dynamic_priority();
+	}
+	else if (next_state == Event::BLOCK)
+	{
+		//TODO: i've added extra whitespace before ib= since that looks to be what test files show...
+		cout << "  ib="
+		     << burst	 
+		     << " rem=" 
+		     << (process->get_total_cpu_time()
+			- process->get_elapsed_time());
 	}
 	cout << "\n";	
 }	
@@ -100,7 +111,10 @@ int evaluate_state_transition(
 					process,
 					timestamp,
 					curr_state,
-					next_state);
+					next_state,
+					0, 
+					timestamp - process->get_state_transition_timestamp()
+					);
                         }
 			curr_state = Event::READY;
                         next_state = Event::RUNNING;
@@ -116,7 +130,14 @@ int evaluate_state_transition(
 			//TODO burst should be max(burst,remaining cpu time actually needed for process)
 			burst = rands.get_next_random_value(
 					process->get_cpu_burst());
-			//TODO add DONE handler logic here
+			
+			if ( (burst + process->get_elapsed_time())
+				>= process->get_total_cpu_time() )
+			{
+				burst = process->get_total_cpu_time()
+					- process->get_elapsed_time();
+					
+			}
 			if(args.trace_state_transition)
 			{	
 				print_state_transition_info(
@@ -124,10 +145,10 @@ int evaluate_state_transition(
 					timestamp,
 					curr_state,
 					next_state,
-					burst);
+					burst,
+					0);
 			}
 			curr_state = Event::RUNNING;
-			//TODO you can set next event to block, and we can let scheduler handle removal of process and not actually create a new event
 			next_state = Event::BLOCK;
 			process->set_state_transition_timestamp(timestamp);
 			timestamp += burst;
@@ -142,23 +163,44 @@ int evaluate_state_transition(
 			// timestamp
 			// TODO: set_elapsed_time may not always be full burst on preempt - maybe it's okay here, but in PREEMPT need to handle
 			process->set_elapsed_time(elapsed_time);	
-			
-			burst = rands.get_next_random_value(
-					process->get_io_burst());
-			if (args.trace_state_transition)
+			//NOTE: (1) elapsed time must be set before is_done() to be correct
+			//      (2) we allow call_scheduler=true because we'll let scheduler clean up completed process for us
+			//      (3) TODO should we update state/proces info at all here?
+			if (process->is_done())
 			{
-				print_state_transition_info(
-					process,
-					timestamp,
-					curr_state,
-					next_state,
-					burst);
+				if (args.trace_state_transition)
+				{
+					print_state_transition_info(
+						process,
+						timestamp,
+						curr_state,
+						next_state,
+						0,
+						timestamp - process->get_state_transition_timestamp()
+						);
+				}	
 			}
-			curr_state = Event::BLOCK;
-			next_state = Event::READY;
-			process->set_state_transition_timestamp(timestamp);
-			timestamp += burst;
-			print_add_event_info(args,events,rands,process,timestamp,curr_state,next_state);
+			else
+			{
+				burst = rands.get_next_random_value(
+						process->get_io_burst());
+				if (args.trace_state_transition)
+				{
+					print_state_transition_info(
+						process,
+						timestamp,
+						curr_state,
+						next_state,
+						burst,
+						timestamp - process->get_state_transition_timestamp()
+						);
+				}
+				curr_state = Event::BLOCK;
+				next_state = Event::READY;
+				process->set_state_transition_timestamp(timestamp);
+				timestamp += burst;
+				print_add_event_info(args,events,rands,process,timestamp,curr_state,next_state);
+			}
 			call_scheduler = true;
 			break;
 		default:
