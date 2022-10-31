@@ -48,6 +48,11 @@ unsigned int Process::get_elapsed_time()
 	return _elapsed_time;
 }
 
+unsigned int Process::get_elapsed_block_time()
+{
+	return _elapsed_block_time;
+}
+
 bool Process::is_done()
 {
 	return (_elapsed_time >= _total_cpu_time);
@@ -106,6 +111,11 @@ void Process::set_elapsed_time(const unsigned int cpu_usage_time)
 		_elapsed_time = new_elapsed_time;
 	}
 }
+
+void Process::set_elapsed_block_time(const unsigned int block_time)
+{
+	_elapsed_block_time += block_time;
+}
 	
 void Process::print_process_info()
 {
@@ -129,11 +139,14 @@ void Process::print_process_summary(string& scheduler_type)
 		_total_cpu_time,
 		_cpu_burst,
 		_io_burst,
-		0, // TODO: Static Priority (but only print if scheduler_type == PRO/PREPRIO
-		0, // TODO: Finishing Time
-		0, // TODO: Turnaround Time
-		0, // TODO: I/O Time
-		0); // TODO: CPU Waiting Time	
+		_static_priority, // TODO: Static Priority (but only print if scheduler_type == PRO/PREPRIO
+		_state_transition_timestamp, // TODO: Finishing Time
+		_state_transition_timestamp - _arrival_time, // TODO: Turnaround Time
+		_elapsed_block_time, // TODO: I/O Time
+		0); // TODO: CPU Waiting Time - i.e., time in 'Ready' state
+			// to calculate this i think you would need to update the timestamp of
+			// every process in run_queue during scheduler_handler() which holds all processes
+			// and would, by that point, have the latest timestamp	
 }
 
 

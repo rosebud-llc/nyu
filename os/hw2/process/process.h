@@ -36,6 +36,7 @@ public:
 	unsigned int get_dynamic_priority();
 	unsigned int get_state_transition_timestamp();
 	unsigned int get_elapsed_time();
+	unsigned int get_elapsed_block_time();
 	bool is_done();
 		
 	// setters
@@ -48,6 +49,7 @@ public:
 	void set_dynamic_priority(const unsigned int);
 	void set_state_transition_timestamp(const unsigned int);
 	void set_elapsed_time(const unsigned int);	
+	void set_elapsed_block_time(const unsigned int);
 
 	// printers	
 	void print_process_info();
@@ -63,6 +65,7 @@ private:
 	unsigned int _dynamic_priority; // Priorty defined as value in range of [0...(_static_priority-1)]
 	unsigned int _state_transition_timestamp; // Timestamp at which state or process was updated
 	unsigned int _elapsed_time; // Amount of time process has used CPU
+	unsigned int _elapsed_block_time; // Amount of time in block state
 };
 
 #endif

@@ -190,19 +190,43 @@ void Events::print_summary(string& scheduler_type)
 {
 	//TODO create char->string (i.e. F->FCFS) handler in args and save to args so you can pass as string parameter here 
 	cout << scheduler_type << endl;
+	
+	unsigned int finishing_time = 0;
+	double cumulative_turnaround_time = 0.0;
+	double cumulative_total_cpu_time = 0.0;
+	double cumulative_elapsed_block_time = 0.0;
 	vector<Process*>::const_iterator it = _completed_processes.begin();
 	for(; it != _completed_processes.end(); ++it)
 	{
 		(*it)->print_process_summary(scheduler_type);
+		finishing_time = (*it)->get_state_transition_timestamp();
+		cumulative_turnaround_time += (*it)->get_state_transition_timestamp() - (*it)->get_arrival_time();
+		cumulative_total_cpu_time += (*it)->get_total_cpu_time();
+		cumulative_elapsed_block_time += (*it)->get_elapsed_block_time();		
 	}
+	// Uncomment for debugging purposes
+	/*
+	cout << "finishing_time: " << finishing_time << endl;
+	cout << "cumulative_total_cpu_time: " << cumulative_total_cpu_time << endl;
+	cout << "cumulative_elapsed_block_time: " << cumulative_elapsed_block_time << endl;
+	cout << "cpu_utilization: " << (cumulative_total_cpu_time / finishing_time) * 100 << endl;
+	cout << "io_utilization: " << (cumulative_elapsed_block_time / finishing_time) * 100 << endl;
+	cout << "throughput: " << (cumulative_total_cpu_time / 100) / ((double)finishing_time / 100) << endl;
+	*/
+	double cpu_utilization = (cumulative_total_cpu_time / finishing_time) * 100;
+	double io_utilization = (cumulative_elapsed_block_time / finishing_time) * 100;
+	//TODO: fix this so we're not dividing by zero and segfault
+	double avg_turnaround = cumulative_turnaround_time / _completed_processes.size();
+	//double avg_wait_time =  (cumulative_turnaround_time - cumulative_elapsed_cpu_time) / _completed_processes.size();
+	double throughput = (cumulative_total_cpu_time / 100)  / ((double)finishing_time / 100);
 	//TODO collect summary stats from each process and print here
 	printf("SUM: %d %.2lf %.2lf %.2lf %.2lf %.3lf\n",
-		0, //TODO: Finishing time of last event (i.e. last process finished) 
-		0.0, //TODO: CPU Utilization
-		0.0, //TODO: IO utilization
-		0.0, //TODO: Avg turnaround time
-		0.0, //TODO: Avg CPU waiting time
-		0.0); //TODO: Throughput of number of processes per 100 time units
+		finishing_time, //TODO: Finishing time of last event (i.e. last process finished) 
+		cpu_utilization, //TODO: CPU Utilization
+		io_utilization, //TODO: IO utilization
+		avg_turnaround, //TODO: Avg turnaround time
+		0.0, //TODO: Avg CPU waiting time. NOTE: this is not avg BLOCK time, this is avg WAIT time while process is already in run_queue waiting turn from scheduler
+		throughput); //TODO: Throughput of number of processes per 100 time units
 }
 
 void Events::add_event(Process* process,

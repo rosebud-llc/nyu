@@ -104,7 +104,9 @@ int evaluate_state_transition(
 	unsigned int burst = 0;
 	switch(next_state)
 	{
-		case Event::READY:
+		case Event::READY:			
+			// First, update elapsed_block_time -- needed for per process IO Time summary
+			process->set_elapsed_block_time(elapsed_time);
 			if (args.trace_state_transition)
 			{
 				print_state_transition_info(
@@ -178,7 +180,16 @@ int evaluate_state_transition(
 						0,
 						timestamp - process->get_state_transition_timestamp()
 						);
-				}	
+				}
+				// Even tho process is Done, but update transisition to altest timestamp for correct 
+				// per process summary of Finishing time and Turnaround time
+				process->set_state_transition_timestamp(timestamp);
+				//TODO this can be confusing b/c we're not acctually adding an event, but add_event() handles 
+				//     completed processes by adding to _completed_processes and no event actually created.
+				events.add_event(process,
+					timestamp,
+					curr_state,
+					next_state);	
 			}
 			else
 			{
@@ -254,6 +265,10 @@ int scheduler_handler(
 			next_state);
 		run_queue.pop_front(); //TODO - should this happenn before above print? Removing the process from the run queue
 	}
+	//TODO: for each process that remains in run_queue, 
+	//      you must update a new property (not yet created as of this writing)
+	//      marking how long the processes have been in 'Ready' state (i.e.
+	//      left in run_queue without ever being run).
 	// else, process is NULL and there's no event to schedule
 	return rc;
 }
