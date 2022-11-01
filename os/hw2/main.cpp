@@ -288,7 +288,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		print_args(args);
+		//print_args(args);
 	}
 	
 
@@ -364,7 +364,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	events.print_summary(args.scheduler_specification);
+	events.print_summary(args.scheduler_name);
 
 	return 0;
 }

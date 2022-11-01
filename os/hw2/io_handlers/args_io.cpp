@@ -3,11 +3,44 @@
 #include <iostream> // cout, endl
 #include <fstream>  // ifstream
 #include <string.h> // strcmp, strlen
-
+#include <string> 
 // getopt libs
 #include <ctype.h>
 #include <stdlib.h> // strtoul
 #include <unistd.h>
+
+namespace 
+{
+	string get_scheduler_name(const char scheduler_type)
+	{
+		switch(scheduler_type)
+		{
+			case 'F':
+				// "First-Come, First-Served"
+				return "FCFS";
+			case 'L':
+				// "Last-Come, Last-Served"
+				return "LCFS";
+			case 'S':
+				// "Shorted Remaining Executiom Time First"
+				return "SRTF";
+			case 'R':
+				// "Round Robin"
+				return "RR";
+			case 'P':
+				// "Priority"
+				return "PRIO";
+			case 'E':
+				// "Pre-emptive Priority"
+				return "PREPRIO";
+			default:
+				cerr << "ERROR: Unknown scheduler_type: " << scheduler_type << endl;
+				return "";			
+		}			
+	}
+
+}// end anonymous namespace
+
 
 void init_args(Args& args)
 {
@@ -17,12 +50,14 @@ void init_args(Args& args)
         args.trace_preemption       = false;  // -p
         // Scheduler Specifications
         args.scheduler_specification = 'F';    // -s where DEFAULT == First-Come, First-Served (FCFS)
-        args.quantum = 0;
+        args.scheduler_name = get_scheduler_name('F');
+	args.quantum = 0;
         args.maxprio = 4;  // DEFAULT == 4
         // Input Files
         args.input_file  = "";   // space delimited <unsigned int>'s "AC TC CB IO" per newline 
         args.random_file = "";   // first line is total line count; every subsequent line <unsigned int> 
 }
+
 
 unsigned int parse_scheduler_specification(const char* spec, Args& args)
 {
@@ -60,6 +95,7 @@ unsigned int parse_scheduler_specification(const char* spec, Args& args)
 	else
 	{
 		args.scheduler_specification = scheduler_type;
+		args.scheduler_name = get_scheduler_name(scheduler_type);
 	}
 	
 	// Validate quantum and maxprio, if necessary.

@@ -15,6 +15,7 @@ struct Args
 	bool trace_preemption;       // -p
 	// Scheduler Specifications
 	string scheduler_specification; // -s
+	string scheduler_name; 
 	unsigned int quantum;    
 	unsigned int maxprio;    // DEFAULT == 4
 	// Input Files

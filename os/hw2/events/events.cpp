@@ -68,7 +68,7 @@ Process* Events::_get_process_from_stream(
         	{                               
                 	return process; 
 		}
-		cout << "LINE: " << line << endl;
+		//cout << "LINE: " << line << endl;
 		
 		// Create new c_string from line
 		char* c_string = new char [line.length()+1];
@@ -136,11 +136,11 @@ void Events::_init_events_list(
                 {               
                         break;
                 }
-                process->print_process_info();
+                //process->print_process_info();
 		Event* event = new Event(process);
 		_events_list.push_back(event);
 	}
-	cout << "Total number of processes created: " << _events_list.size() << endl;
+	//cout << "Total number of processes created: " << _events_list.size() << endl;
 }
 
 
@@ -241,9 +241,26 @@ void Events::add_event(Process* process,
 	}
 	else
 	{
+		bool event_inserted = false;
 		Event* event = new Event(process, curr_state, next_state, timestamp);
-		_events_list.push_front(event);
-		//TODO ^this needs to be a private function that properly sorts newly added events
+		list<Event*>::iterator it = _events_list.begin();
+		for(; it != _events_list.end(); ++it)
+		{
+			//TODO the reason we don't use ">=" is because if two processes
+			// have same arrival tiem, we want them to be processed in that same order.
+			// See order of event sfor created->ready->run and instances where add_event() gets called to verify
+			if ((*it)->get_timestamp() >= event->get_timestamp())
+			{
+				_events_list.insert(it,event);
+				event_inserted = true;
+				break;		
+			}
+		}
+		// Looped over _event_list, but never inserted, therefore, insert at the end;
+		if (!event_inserted)
+		{
+			_events_list.push_back(event);	
+		}
 	}
 }
 

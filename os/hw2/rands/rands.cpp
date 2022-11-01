@@ -94,6 +94,6 @@ void Rands::_init_random_values()
         {
                 cerr << "Failed to open _random_stream: " << endl;
         }
-        cout << "Total random values added to vector: " << _random_values.size() << endl;
+        //cout << "Total random values added to vector: " << _random_values.size() << endl;
 }
 
