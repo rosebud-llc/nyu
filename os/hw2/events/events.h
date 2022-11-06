@@ -22,7 +22,6 @@ public:
 
 	// setters
 	void pop_front_event();
-	void add_completed_process(Process*);
 	void add_event(Process*,
 		unsigned int timestamp, // i.e. the event timestamp
 		Event::EVENT_STATE curr_state,
@@ -30,6 +29,7 @@ public:
 		
 	// getters
 	Event* get_front_event();
+	unsigned int get_timestamp_when_cpu_free(unsigned int);
 
 	// printers
 	void print_events();
@@ -50,6 +50,11 @@ private:
 		const unsigned int maxprio,
 		Rands& rands);
 	void _init_completed_processes();	
+	
+	// methods to sort events and completed processes
+	//void _sort_events(const unsigned int);
+	//void _sort_completed_processes();
+	//bool _compare_pids(Process*,Process*);
 };
 
 #endif

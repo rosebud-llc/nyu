@@ -47,7 +47,8 @@ void init_args(Args& args)
 	args.trace_state_transition = false;  // -v
         args.trace_event_execution  = false;  // -t
         args.trace_event_queue      = false;  // -e
-        args.trace_preemption       = false;  // -p
+        args.trace_run_queue        = false;  // -r
+	args.trace_preemption       = false;  // -p
         // Scheduler Specifications
         args.scheduler_specification = 'F';    // -s where DEFAULT == First-Come, First-Served (FCFS)
         args.scheduler_name = get_scheduler_name('F');
@@ -126,6 +127,7 @@ void print_args(const Args& args)
 	cout << "\t-t: " << args.trace_event_execution << endl;
 	cout << "\t-t: " << args.trace_event_queue << endl;
 	cout << "\t-p: " << args.trace_preemption << endl;
+	cout << "\t-r: " << args.trace_run_queue << endl;
 	cout << "\t-s: " << args.scheduler_specification << endl;
 	cout << "\t\tquantum: " << args.quantum << endl;
 	cout << "\t\tmaxprio: " << args.maxprio << endl;
@@ -146,7 +148,7 @@ unsigned int get_args(int argc, char* argv[], Args& args)
 	
 	// Process option args
 	int c;
-	while ((c = getopt (argc, argv, "vteps:")) != -1)
+	while ((c = getopt (argc, argv, "vteprs:")) != -1)
 	{
 		switch(c)
 		{
@@ -161,6 +163,9 @@ unsigned int get_args(int argc, char* argv[], Args& args)
 				break;
 			case 'p':
 				args.trace_preemption = true;
+				break;
+			case 'r': 
+				args.trace_run_queue = true;
 				break;
 			case 's':
 				args.scheduler_specification = true;

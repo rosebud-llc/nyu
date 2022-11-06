@@ -1,0 +1,13 @@
+# lab2: scheduler
+
+# build
+`make`
+
+# run
+`./main -s -v -t -e <input_file> <rands_file>`
+
+# test
+`./runit.sh <test_output_dir> <executable>`
+
+# grade
+`./gradeit.sh <referece_output> <test_output>`

@@ -12,6 +12,7 @@ struct Args
 	bool trace_state_transition; // -v
 	bool trace_event_execution;  // -t
 	bool trace_event_queue;      // -e
+	bool trace_run_queue;        // -r
 	bool trace_preemption;       // -p
 	// Scheduler Specifications
 	string scheduler_specification; // -s

@@ -7,6 +7,7 @@
 #include <vector>   // push_back
 #include <stdlib.h> // strtoul
 #include <iomanip> // setfill, setw
+#include <algorithm> //sort
 
 // Constructor
 Events::Events(
@@ -120,6 +121,10 @@ void Events::_init_completed_processes()
 	if(_events_list.size() < _completed_processes.max_size())
 	{
 		_completed_processes.reserve(_events_list.size());
+		for(unsigned int i = 0; i < _events_list.size(); ++i)
+		{
+			_completed_processes.push_back(NULL);
+		} 
 	}
 }
 
@@ -156,6 +161,24 @@ Event* Events::get_front_event()
 	}
 }
 
+
+unsigned int Events::get_timestamp_when_cpu_free(unsigned int timestamp)
+{
+	unsigned int new_timestamp = timestamp;
+	list<Event*>::const_iterator it = _events_list.begin();
+	for(; it != _events_list.end(); ++it)
+	{
+		if ((*it)->get_curr_state() == Event::RUNNING
+			&& (*it)->get_next_state() == Event::BLOCK)
+		{
+			new_timestamp = (*it)->get_timestamp();
+			break;
+		}
+	}
+	return new_timestamp;
+}
+
+
 void Events::pop_front_event()
 {
 	if (!_events_list.empty())
@@ -167,11 +190,6 @@ void Events::pop_front_event()
 		cerr << "Failed to pop front event because _events_list is empty." << endl;
 	}
 }	
-
-void Events::add_completed_process(Process* process)
-{
-	_completed_processes.push_back(process);
-}
 
 void Events::print_events()
 {
@@ -229,6 +247,11 @@ void Events::print_summary(string& scheduler_type)
 		throughput); //TODO: Throughput of number of processes per 100 time units
 }
 
+bool compare_timestamp(Event* a, Event* b)
+{
+	return a->get_timestamp() < b->get_timestamp();	
+}
+
 void Events::add_event(Process* process,
             unsigned int timestamp, // i.e. the event timestamp
             Event::EVENT_STATE curr_state,
@@ -237,20 +260,52 @@ void Events::add_event(Process* process,
 	// If process completed, mark it done, otherwise, create next Event
 	if (process->get_elapsed_time() >= process->get_total_cpu_time())
 	{
-		_completed_processes.push_back(process);
+		_completed_processes[process->get_pid()] = process;
 	}
 	else
 	{
+		bool call_sort_events = false;
 		bool event_inserted = false;
 		Event* event = new Event(process, curr_state, next_state, timestamp);
 		list<Event*>::iterator it = _events_list.begin();
 		for(; it != _events_list.end(); ++it)
 		{
+			if (curr_state == Event::RUNNING
+				&& (*it)->get_next_state() == Event::RUNNING)
+			{
+				list<Event*>::iterator it2 = it;
+				for(; it2 != _events_list.end(); it2++)
+				{
+					if ((*it2)->get_timestamp() < timestamp)
+					{
+						(*it2)->set_timestamp(timestamp);
+						(*it2)->get_process()->set_state_transition_timestamp(timestamp);
+						++it2;
+						continue;
+					}
+					break;			
+				}
+				_events_list.insert(it,event);
+				event_inserted = true;	
+				call_sort_events = true;
+				break;
+			}
 			//TODO the reason we don't use ">=" is because if two processes
 			// have same arrival tiem, we want them to be processed in that same order.
 			// See order of event sfor created->ready->run and instances where add_event() gets called to verify
 			if ((*it)->get_timestamp() >= event->get_timestamp())
 			{
+				// If timestamps are equivalent, order by priority
+				while ((*it)->get_timestamp() == event->get_timestamp())
+				{	
+					/*if ((*it)->get_process()->get_pid() 
+						>= event->get_process()->get_pid())
+					{
+						//cout << "inner while loop: insert process# " << event->get_process()->get_pid() << " before process# " << (*it)->get_process()->get_pid() << endl;
+						break;
+					}*/
+					it++;
+				}
 				_events_list.insert(it,event);
 				event_inserted = true;
 				break;		
@@ -260,6 +315,11 @@ void Events::add_event(Process* process,
 		if (!event_inserted)
 		{
 			_events_list.push_back(event);	
+		}
+		// Sort events by timestamp
+		if(call_sort_events)
+		{
+			_events_list.sort(compare_timestamp);
 		}
 	}
 }
