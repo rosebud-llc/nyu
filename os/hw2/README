@@ -1,5 +1,11 @@
 # lab2: scheduler
 
+Unfortunately, I fell sick with covid the last two weeks
+and was unable to work on the final portion of the assignment
+by creating the scheduler class objects. You'll find 
+all other components have been implements, such as
+arg parsing, chronologically sorted events, run queue, and more.
+
 # build
 `make`
 

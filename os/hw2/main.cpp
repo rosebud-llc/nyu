@@ -208,7 +208,7 @@ int evaluate_state_transition(
 					curr_state,
 					next_state,
 					burst,
-					elapsed_time //process->get_cpu_burst()
+					elapsed_time // ? elapsed_time : process->get_cpu_burst()
 					); // elapsed_time //timestamp - process->get_state_transition_timestamp());
 			}
 			curr_state = Event::RUNNING;
